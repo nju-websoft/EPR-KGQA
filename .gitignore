@@ -1,0 +1,10 @@
+**/__pycache__/
+data/
+log/
+test.ipynb
+.idea
+NSM_H/datasets
+NSM_H/checkpoint
+.ipynb_checkpoints/
+**/.vscode/
+bert-base-uncased/
