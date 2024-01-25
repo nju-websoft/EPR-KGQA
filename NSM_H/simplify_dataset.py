@@ -9,7 +9,7 @@ from tqdm import tqdm
 def simplify_entities(entity_list, entity2id):
     ent_id_list = []
     for entity in entity_list:
-        entity_text = entity['text'].strip()
+        entity_text = entity["text"].strip()
         if entity_text not in entity2id:
             print(entity_text)
             assert False
@@ -22,9 +22,9 @@ def simplify_tuples(tuple_list, entity2id, relation2id):
     triple_list = []
     for triple in tuple_list:
         sbj, rel, obj = triple
-        head = entity2id[sbj['text']]
-        rel = relation2id[rel['text']]
-        tail = entity2id[obj['text']]
+        head = entity2id[sbj["text"]]
+        rel = relation2id[rel["text"]]
+        tail = entity2id[obj["text"]]
         triple_list.append([head, rel, tail])
     return triple_list
 
@@ -35,8 +35,12 @@ def simplify_data(input, output, entity2id, relation2id):
     for line in tqdm(f_in):
         tp_dict = json.loads(line)
         tp_dict["entities"] = simplify_entities(tp_dict["entities"], entity2id)
-        tp_dict["subgraph"]["tuples"] = simplify_tuples(tp_dict["subgraph"]["tuples"], entity2id, relation2id)
-        tp_dict["subgraph"]["entities"] = simplify_entities(tp_dict["subgraph"]["entities"], entity2id)
+        tp_dict["subgraph"]["tuples"] = simplify_tuples(
+            tp_dict["subgraph"]["tuples"], entity2id, relation2id
+        )
+        tp_dict["subgraph"]["entities"] = simplify_entities(
+            tp_dict["subgraph"]["entities"], entity2id
+        )
         f_out.write(json.dumps(tp_dict) + "\n")
     f_in.close()
     f_out.close()
@@ -44,7 +48,7 @@ def simplify_data(input, output, entity2id, relation2id):
 
 def load_dict(filename):
     word2id = dict()
-    with open(filename, encoding='utf-8') as f_in:
+    with open(filename, encoding="utf-8") as f_in:
         for line in f_in:
             word = line.strip()
             word2id[word] = len(word2id)

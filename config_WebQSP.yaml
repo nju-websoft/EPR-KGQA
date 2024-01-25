@@ -1,23 +1,17 @@
 
 dataset: 
   tag: "WebQSP"
+  # follow the setting of using gold topic entities in Subgraph Retrieval 
   train: "data/dataset/WebQSP/train_simple.jsonl"
   dev: "data/dataset/WebQSP/dev_simple.jsonl"
   test: "data/dataset/WebQSP/test_simple.jsonl"
-  # follow the setting of using gold topic entities in Subgraph Retrieval 
   SR_cache_all: Null
-  train_relations: "data/dataset/WebQSP/WebQSP_train_relations.json"
-  test_iid_idxs: "data/dataset/WebQSP/WebQSP_test_iid_idxs.json"
-  test_zero_shot_idxs: "data/dataset/WebQSP/WebQSP_test_zero_shot_idxs.json"
 
 cache:
-  pred_info: "data/cache/predicate_info_fb.json"
-  type_info: "data/cache/type_info_fb.json"
-  pred_conn: "data/cache/pred_conn_fb.jsonl"
   searched_path: "data/cache/WebQSP/cached_paths.jsonl"
 
 log:
-  process_log: "data/log/process.log"
+  process_log: "data/log/WebQSP_process.log"
   level: "DEBUG"
 
 global_var:
@@ -32,7 +26,7 @@ global_var:
 
 ap_retrieval:
   # working directory
-  work_dir: "data/WebQSP/lp_retrieval/"
+  work_dir: "data/WebQSP/ap_retrieval/"
   # pred-pred snippets topk
   ap_topk: 100
 

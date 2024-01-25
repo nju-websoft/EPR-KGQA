@@ -23,7 +23,7 @@ WEBQSP_OUT_FILE = "OursWebQSPTestResult.json"
 
 def load_entity(filename):
     ents = []
-    with open(filename, encoding='utf-8') as f_in:
+    with open(filename, encoding="utf-8") as f_in:
         for line in f_in:
             ent = line.strip()
             ents.append(ent)
@@ -32,22 +32,36 @@ def load_entity(filename):
 
 def load_dataset(filename):
     dataset = []
-    with open(filename, encoding='utf-8') as f_in:
+    with open(filename, encoding="utf-8") as f_in:
         for line in f_in:
             temp = json.loads(line)
-            dataset.append({"question": temp["question"], "topicEnt": temp["entities"],
-                            "goldAns": [d["kb_id"] for d in temp["answers"]]})
+            dataset.append(
+                {
+                    "question": temp["question"],
+                    "topicEnt": temp["entities"],
+                    "goldAns": [d["kb_id"] for d in temp["answers"]],
+                }
+            )
     return dataset
 
 
 def load_result(filename):
     results = []
-    with open(filename, encoding='utf-8') as f_in:
+    with open(filename, encoding="utf-8") as f_in:
         for line in f_in:
             temp = json.loads(line)
             results.append(
-                {"question": "", "topicEnt": [], "goldAns": [], "candidate": temp["candidate"], "P": temp["precison"],
-                 "R": temp["recall"], "f1": temp["f1"], "hit": temp["hit"]})
+                {
+                    "question": "",
+                    "topicEnt": [],
+                    "goldAns": [],
+                    "candidate": temp["candidate"],
+                    "P": temp["precison"],
+                    "R": temp["recall"],
+                    "f1": temp["f1"],
+                    "hit": temp["hit"],
+                }
+            )
     return results
 
 
