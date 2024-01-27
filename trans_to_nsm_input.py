@@ -8,7 +8,7 @@ from tqdm import tqdm
 from config import Config
 from my_utils.io_utils import read_json, append_line, append_jsonl
 from my_utils.logger import Logger
-from my_utils.pred_base import PredBase
+from my_utils.rel_base import relBase
 
 logger = Logger.get_logger("Trans_NSM", True)
 
@@ -29,8 +29,8 @@ def collect_covered_ent_rel(retrieved_subgs):
                 ents.add(trips[2])
             assert trips[1].startswith('ns:')
             rels.add(trips[1][3::])
-            if PredBase.get_reverse(trips[1]):
-                rels.add(PredBase.get_reverse(trips[1])[3::])
+            if relBase.get_reverse(trips[1]):
+                rels.add(relBase.get_reverse(trips[1])[3::])
         for topic in subg_info["topics"]:
             if topic.startswith('ns:'):
                 ents.add(topic[3::])
@@ -89,20 +89,20 @@ def trans_to_nsm_format(ent2id, rel2id, ours_subgs, reformated_subgs_f):
             else:
                 subj = trips[0]
             assert  trips[1].startswith('ns:')
-            pred = trips[1][3::]
-            if PredBase.get_reverse(trips[1]):
-                pred_rev = PredBase.get_reverse(trips[1])[3::]
+            rel = trips[1][3::]
+            if relBase.get_reverse(trips[1]):
+                rel_rev = relBase.get_reverse(trips[1])[3::]
             else:
-                pred_rev = None
+                rel_rev = None
             if trips[2].startswith('ns:'):
                 obj = trips[2][3::]
             else:
                 obj = trips[2]
             subg_ents.append(ent2id[subj])
             subg_ents.append(ent2id[obj])
-            subg_tuples.append([ent2id[subj], rel2id[pred], ent2id[obj]])
-            if pred_rev:
-                subg_tuples.append([ent2id[obj], rel2id[pred_rev], ent2id[subj]])
+            subg_tuples.append([ent2id[subj], rel2id[rel], ent2id[obj]])
+            if rel_rev:
+                subg_tuples.append([ent2id[obj], rel2id[rel_rev], ent2id[subj]])
         subg_ents = list(set(subg_ents))
         nsm_item = dict()
         nsm_item["id"] = subg_info["id"]

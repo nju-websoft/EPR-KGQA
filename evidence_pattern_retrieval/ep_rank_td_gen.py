@@ -41,18 +41,18 @@ def get_quality_score(comb: Combination, gold_ans: List[str]) -> float:
 
 def td_gen_by_ans_coverage(
     ds_item: DataItem,
-    ent_preds: Dict[str, Dict[str, List[str]]],
-    pred_preds: Dict[str, Dict[str, List[str]]],
+    ent_rels: Dict[str, Dict[str, List[str]]],
+    rel_rels: Dict[str, Dict[str, List[str]]],
 ) -> dict:
     qid = ds_item.id
     text = ds_item.question
     ans = ds_item.answers
-    if len(ent_preds) == 0:
+    if len(ent_rels) == 0:
         combs = []
         combs_wo_check = []
     else:
-        combs = EPCombiner.combine(ent_preds, pred_preds, True)
-        combs_wo_check = EPCombiner.combine(ent_preds, pred_preds, False)
+        combs = EPCombiner.combine(ent_rels, rel_rels, True)
+        combs_wo_check = EPCombiner.combine(ent_rels, rel_rels, False)
     # calculate quality score for each combined pattern
     combs_with_quality = []
     max_quality = 0
@@ -90,9 +90,9 @@ def mp_td_gen_by_ans_coverage(target_file, pid, queue):
         if info == None:
             break
         ds_item = info["item"]
-        ent_preds = info["ep_ap"]
-        pred_preds = info["pp_ap"]
-        td_info = td_gen_by_ans_coverage(ds_item, ent_preds, pred_preds)
+        ent_rels = info["ep_ap"]
+        rel_rels = info["pp_ap"]
+        td_info = td_gen_by_ans_coverage(ds_item, ent_rels, rel_rels)
         append_jsonl(td_info, target_file)
         global finished_td_gen
         finished_td_gen += 1

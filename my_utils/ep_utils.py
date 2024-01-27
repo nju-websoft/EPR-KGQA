@@ -75,7 +75,7 @@ def induce_instantiated_subg(ep_str: str) -> Tuple[List[str], List[str]]:
     row_cnt = __get_row_num_from_var_map(var_const_map)
     for trip in trips_with_var:
         subj = trip[0]
-        pred = trip[1]
+        rel = trip[1]
         obj = trip[2]
         if subj.startswith("?"):
             subj_insts = var_const_map[subj]
@@ -90,7 +90,7 @@ def induce_instantiated_subg(ep_str: str) -> Tuple[List[str], List[str]]:
             o = obj_insts[idx]
             # 过滤 s 和 o 不是有效实体的情况
             if s.startswith("ns:") and o.startswith("ns:"):
-                trip_strs.add(" ".join([s, pred, o]))
+                trip_strs.add(" ".join([s, rel, o]))
                 nodes.add(s)
                 nodes.add(o)
     return list(trip_strs), list(nodes)
@@ -127,40 +127,40 @@ def get_retrieved_aps(topic_ents: List[str], ap_info: dict) -> Tuple[dict, dict]
     [param] ap_info: {"id":str, "split_id":str, "question":str, "candidate_snippets":List[str]}
     e.g. government.politician.government_positions_held S-S government.government_position_held.jurisdiction_of_office
     """
-    ent_preds = dict()
-    pred_preds = dict()
-    # prepare ent_pred
-    # 如果文件给出了 ent_preds 结果，则直接读取。否则需要临时查询
-    if "ent_preds" in ap_info:
-        for ep_str in ap_info["ent_preds"]:
+    ent_rels = dict()
+    rel_rels = dict()
+    # prepare ent_rel
+    # 如果文件给出了 ent_rels 结果，则直接读取。否则需要临时查询
+    if "ent_rels" in ap_info:
+        for ep_str in ap_info["ent_rels"]:
             temp = ep_str.split(" ")
             ent = temp[0]
             tag = temp[1]
-            pred = temp[2]
-            if ent not in ent_preds:
-                ent_preds[ent] = {"fwd": [], "rev": []}
-            ent_preds[ent][tag].append(pred)
-            if pred not in pred_preds:
-                pred_preds[pred] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
+            rel = temp[2]
+            if ent not in ent_rels:
+                ent_rels[ent] = {"fwd": [], "rev": []}
+            ent_rels[ent][tag].append(rel)
+            if rel not in rel_rels:
+                rel_rels[rel] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
     else:
         for te in topic_ents:
-            ent_preds[te] = {"fwd": [], "rev": []}
-            neighbor_preds = FreebaseODBC.query_neighbor_preds([te])
-            for pred in neighbor_preds:
-                if pred.endswith("_Rev"):
-                    pred = pred[:-4]
-                    ent_preds[te]["rev"].append(pred)
+            ent_rels[te] = {"fwd": [], "rev": []}
+            neighbor_rels = FreebaseODBC.query_neighbor_rels([te])
+            for rel in neighbor_rels:
+                if rel.endswith("_Rev"):
+                    rel = rel[:-4]
+                    ent_rels[te]["rev"].append(rel)
                 else:
-                    ent_preds[te]["fwd"].append(pred)
-                if pred not in pred_preds:
-                    pred_preds[pred] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
-    # prepare pred_pred
+                    ent_rels[te]["fwd"].append(rel)
+                if rel not in rel_rels:
+                    rel_rels[rel] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
+    # prepare rel_rel
     for pp_str in ap_info["candidates"]:
         splits = pp_str.split(" ")
-        pred1 = "ns:" + splits[0]
-        pred2 = "ns:" + splits[2]
+        rel1 = "ns:" + splits[0]
+        rel2 = "ns:" + splits[2]
         tag = splits[1]
-        if pred1 not in pred_preds:
-            pred_preds[pred1] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
-        pred_preds[pred1][tag].append(pred2)
-    return ent_preds, pred_preds
+        if rel1 not in rel_rels:
+            rel_rels[rel1] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
+        rel_rels[rel1][tag].append(rel2)
+    return ent_rels, rel_rels

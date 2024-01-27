@@ -102,8 +102,8 @@ class FreebaseODBC:
         return endpoint
 
     @classmethod
-    def query_pred_info(cls, timeout=1000):
-        print("[INFO] query freebase predicate info...")
+    def query_rel_info(cls, timeout=1000):
+        print("[INFO] query freebase relation info...")
         endpoint = FreebaseODBC.get_new_endpoint()
         cursor = endpoint.cursor()
 
@@ -185,7 +185,7 @@ class FreebaseODBC:
         return type_info_dict
 
     @classmethod
-    def query_neighbor_preds(cls, base_path: List[str]) -> List[str]:
+    def query_neighbor_rels(cls, base_path: List[str]) -> List[str]:
         results = []
         base_query, connect_var = cls.__build_base_path_query(base_path)
         query1 = forward_query(base_query, connect_var, "")
@@ -218,12 +218,12 @@ class FreebaseODBC:
         conn.close()
         return results
 
-    def query_predstr_to_ans(
-        self, base_path: List[str], nary_preds: List[str], ans_ents: Set[str]
+    def query_relstr_to_ans(
+        self, base_path: List[str], nary_rels: List[str], ans_ents: Set[str]
     ) -> List[str]:
         results = []
         ans_ent = list(ans_ents)[0]  # !!! 这里相当于随便取了一个答案节点用于搜索
-        # reach answer by binary pred
+        # reach answer by binary rel
         base_query, connect_var = self.__build_base_path_query(base_path)
         query1 = forward_query(base_query, connect_var, f"VALUES ?o {{{ans_ent}}}")
         query2 = reverse_query(base_query, connect_var, f"VALUES ?o {{{ans_ent}}}")
@@ -247,16 +247,16 @@ class FreebaseODBC:
                 f"[reverse answer] base_query: {base_query}, ans_ent: {ans_ent}, error_info: {e}"
             )
 
-        # reach answer by n-ary pred
-        for pred in nary_preds:
-            base_query, connect_var = self.__build_base_path_query(base_path + [pred])
+        # reach answer by n-ary rel
+        for rel in nary_rels:
+            base_query, connect_var = self.__build_base_path_query(base_path + [rel])
             query1 = forward_query(base_query, connect_var, f"VALUES ?o {{{ans_ent}}}")
             query2 = reverse_query(base_query, connect_var, f"VALUES ?o {{{ans_ent}}}")
             try:
                 with self.endpoint:
                     self.cursor.execute(query1)
                 for row in self.cursor.fetchall():
-                    results.append(pred + "..." + self.__shorten(row.p))
+                    results.append(rel + "..." + self.__shorten(row.p))
             except Exception as e:
                 self.logger.debug(
                     f"[forward answer] base_query: {base_query}, ans_ent: {ans_ent}, error_info: {e}"
@@ -266,7 +266,7 @@ class FreebaseODBC:
                 with self.endpoint:
                     self.cursor.execute(query2)
                 for row in self.cursor.fetchall():
-                    results.append(pred + "..." + self.__shorten(row.pr) + "_Rev")
+                    results.append(rel + "..." + self.__shorten(row.pr) + "_Rev")
             except Exception as e:
                 self.logger.debug(
                     f"[reverse answer] base_query: {base_query}, ans_ent: {ans_ent}, error_info: {e}"
@@ -274,19 +274,19 @@ class FreebaseODBC:
 
         return results
 
-    def query_nary_predstrs(
-        self, base_path: List[str], nary_preds: List[str]
+    def query_nary_relstrs(
+        self, base_path: List[str], nary_rels: List[str]
     ) -> List[str]:
         results = []
-        for pred in nary_preds:
-            base_query, connect_var = self.__build_base_path_query(base_path + [pred])
+        for rel in nary_rels:
+            base_query, connect_var = self.__build_base_path_query(base_path + [rel])
             query1 = forward_query(base_query, connect_var, "")
             query2 = reverse_query(base_query, connect_var, "")
             try:
                 with self.endpoint:
                     self.cursor.execute(query1)
                 for row in self.cursor.fetchall():
-                    results.append(pred + "..." + self.__shorten(row.p))
+                    results.append(rel + "..." + self.__shorten(row.p))
             except Exception as e:
                 self.logger.debug(
                     f"[forward n-ary] base_query: {base_query}, error_info: {e}"
@@ -296,7 +296,7 @@ class FreebaseODBC:
                 with self.endpoint:
                     self.cursor.execute(query2)
                 for row in self.cursor.fetchall():
-                    results.append(pred + "..." + self.__shorten(row.pr) + "_Rev")
+                    results.append(rel + "..." + self.__shorten(row.pr) + "_Rev")
             except Exception as e:
                 self.logger.debug(
                     f"[reverse n-ary] base_query: {base_query}, error_info: {e}"
@@ -305,14 +305,14 @@ class FreebaseODBC:
         return results
 
     @classmethod
-    def query_binary_facts(self, base_path: List[str], pred: str) -> List[List[str]]:
+    def query_binary_facts(self, base_path: List[str], rel: str) -> List[List[str]]:
         ans = []
         base_query, connect_var = self.__build_base_path_query(base_path)
         if base_query == "":
             base_query = f"VALUES ?x {{{connect_var}}}"
-        p = pred
-        if pred.endswith("_Rev"):
-            p = "^" + pred[:-4]
+        p = rel
+        if rel.endswith("_Rev"):
+            p = "^" + rel[:-4]
         query = f""" SPARQL
         PREFIX ns: <http://rdf.freebase.com/ns/>
         SELECT DISTINCT ?x ?o
@@ -328,10 +328,10 @@ class FreebaseODBC:
             with conn:
                 cursor.execute(query)
             for row in cursor.fetchall():
-                ans.append([self.__shorten(row.x), pred, self.__shorten(row.o)])
+                ans.append([self.__shorten(row.x), rel, self.__shorten(row.o)])
         except Exception as e:
             self.logger.debug(
-                f"[binary facts] base_query: {base_query}, pred: {pred}, error_info: {e}"
+                f"[binary facts] base_query: {base_query}, rel: {rel}, error_info: {e}"
             )
         cursor.close()
         conn.close()
@@ -339,18 +339,18 @@ class FreebaseODBC:
 
     @classmethod
     def query_nary_facts(
-        self, base_path: List[str], pred1: str, pred2: str
+        self, base_path: List[str], rel1: str, rel2: str
     ) -> List[List[str]]:
         ans = []
         base_query, connect_var = self.__build_base_path_query(base_path)
         if base_query == "":
             base_query = f"VALUES ?x {{{connect_var}}}"
-        p1 = pred1
-        p2 = pred2
-        if pred1.endswith("_Rev"):
-            p1 = "^" + pred1[:-4]
-        if pred2.endswith("_Rev"):
-            p2 = "^" + pred2[:-4]
+        p1 = rel1
+        p2 = rel2
+        if rel1.endswith("_Rev"):
+            p1 = "^" + rel1[:-4]
+        if rel2.endswith("_Rev"):
+            p2 = "^" + rel2[:-4]
         query = f""" SPARQL
         PREFIX ns: <http://rdf.freebase.com/ns/>
         SELECT DISTINCT ?x ?o1 ?o
@@ -369,15 +369,15 @@ class FreebaseODBC:
                 ans.append(
                     [
                         self.__shorten(row.x),
-                        pred1,
+                        rel1,
                         self.__shorten(row.o1),
-                        pred2,
+                        rel2,
                         self.__shorten(row.o),
                     ]
                 )
         except Exception as e:
             self.logger.debug(
-                f"[n-ary facts] base_query: {base_query}, pred1: {pred1}, pred2: {pred2}, error_info: {e}"
+                f"[n-ary facts] base_query: {base_query}, rel1: {rel1}, rel2: {rel2}, error_info: {e}"
             )
         cursor.close()
         conn.close()
@@ -390,26 +390,26 @@ class FreebaseODBC:
             return "", base_path[0]
         else:
             start = base_path[0]
-            preds = []
+            rels = []
             for item in base_path[1::]:
-                for pred in item.split("..."):
-                    if pred.endswith("_Rev"):
-                        preds.append("^" + pred[:-4])
+                for rel in item.split("..."):
+                    if rel.endswith("_Rev"):
+                        rels.append("^" + rel[:-4])
                     else:
-                        preds.append(pred)
-            return f"{start} {'/'.join(preds)} ?x.", "?x"
+                        rels.append(rel)
+            return f"{start} {'/'.join(rels)} ?x.", "?x"
 
     @classmethod
-    def query_pred_conn(cls, pred: str):
+    def query_rel_conn(cls, rel: str):
         # 从全局的角度查询关系之间的连接关系
-        pred_conn_info = (
-            lambda conn_trip, pred, var: f"""SPARQL
+        rel_conn_info = (
+            lambda conn_trip, rel, var: f"""SPARQL
         select distinct ?p
         where {{
         {{
             select distinct {var}
             where {{
-            ?s {pred} ?o.
+            ?s {rel} ?o.
             Filter (strstarts(str({var}),"http://rdf.freebase.com/ns/"))
             }}
             limit 10000000
@@ -424,20 +424,24 @@ class FreebaseODBC:
         os_trip = "?o ?p ?t."
         oo_trip = "?t ?p ?o."
         ans = dict()
-        ans["S-S"] = cls.__query_and_filter_pred(pred_conn_info(ss_trip, pred, "?s"))
-        ans["S-O"] = cls.__query_and_filter_pred(pred_conn_info(so_trip, pred, "?s"))
-        ans["O-S"] = cls.__query_and_filter_pred(pred_conn_info(os_trip, pred, "?o"))
-        ans["O-O"] = cls.__query_and_filter_pred(pred_conn_info(oo_trip, pred, "?o"))
+        ans["S-S"] = cls.__query_and_filter_rel(rel_conn_info(ss_trip, rel, "?s"))
+        ans["S-O"] = cls.__query_and_filter_rel(rel_conn_info(so_trip, rel, "?s"))
+        ans["O-S"] = cls.__query_and_filter_rel(rel_conn_info(os_trip, rel, "?o"))
+        ans["O-O"] = cls.__query_and_filter_rel(rel_conn_info(oo_trip, rel, "?o"))
         return ans
 
     @classmethod
-    def __query_and_filter_pred(cls, query: str):
+    def __query_and_filter_rel(cls, query: str):
         # print(query)
-        conn = cls.get_new_endpoint(timeout=1)
+        conn = cls.get_new_endpoint(timeout=60)
         cursor = conn.cursor()
-        with conn:
-            cursor.execute(query)
-        rows = cursor.fetchall()
+        rows = []
+        try:
+            with conn:
+                cursor.execute(query)
+            rows = cursor.fetchall()
+        except Exception as e:
+            cls.logger.debug(f"[has_query_results] query:{query}, err_info:{e}")
         ans = []
         for row in rows:
             if cls.__is_ns_prefix(row.p):

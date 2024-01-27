@@ -23,9 +23,9 @@ class Combination:
 
     # 需要负责所有相关变量的修改
     def add_trip(
-        self, subj: str, pred: str, obj: str, adjacent_info: dict, pred_idx: int
+        self, subj: str, rel: str, obj: str, adjacent_info: dict, rel_idx: int
     ):
-        new_trip = [subj, pred, obj]
+        new_trip = [subj, rel, obj]
         # 处理 subject
         if subj == None:
             assert obj != None
@@ -39,15 +39,15 @@ class Combination:
             self.terminal_var = var_name
         elif subj.startswith("?"):
             assert (subj in self.node_info) and (
-                pred in self.node_info[subj]["fwd_candi"]
-            )  # and (pred_idx >= self.node_info[subj]["bound_idx"])
+                rel in self.node_info[subj]["fwd_candi"]
+            )  # and (rel_idx >= self.node_info[subj]["bound_idx"])
             self.node_info[subj]["fwd_candi"] = self.node_info[subj]["fwd_candi"] & set(
                 adjacent_info["S-S"]
             )
             self.node_info[subj]["rev_candi"] = self.node_info[subj]["rev_candi"] & set(
                 adjacent_info["S-O"]
             )
-            self.node_info[subj]["bound_idx"] = pred_idx
+            self.node_info[subj]["bound_idx"] = rel_idx
             if subj == self.terminal_var:
                 self.terminal_var = None
         else:
@@ -75,15 +75,15 @@ class Combination:
             self.terminal_var = var_name
         elif obj.startswith("?"):
             assert (obj in self.node_info) and (
-                pred in self.node_info[obj]["rev_candi"]
-            )  # and (pred_idx >= self.node_info[obj]["bound_idx"])
+                rel in self.node_info[obj]["rev_candi"]
+            )  # and (rel_idx >= self.node_info[obj]["bound_idx"])
             self.node_info[obj]["fwd_candi"] = self.node_info[obj]["fwd_candi"] & set(
                 adjacent_info["O-S"]
             )
             self.node_info[obj]["rev_candi"] = self.node_info[obj]["rev_candi"] & set(
                 adjacent_info["O-O"]
             )
-            self.node_info[obj]["bound_idx"] = pred_idx
+            self.node_info[obj]["bound_idx"] = rel_idx
             if obj == self.terminal_var:
                 self.terminal_var = None
         else:
@@ -177,44 +177,44 @@ class Combination:
 
 
 class EPCombiner:
-    max_combine_count = Config.max_combine_preds
+    max_combine_count = Config.max_combine_rels
 
     @classmethod
     def combine(
         cls,
-        ent_pred_snippets: dict,
-        pred_pred_snippets: dict,
+        ent_rel_snippets: dict,
+        rel_rel_snippets: dict,
         instantiable_check: bool = False,
     ) -> List[Combination]:
-        assert len(ent_pred_snippets) > 0
-        ents = set(ent_pred_snippets.keys())
-        pred_idx = dict()
-        for idx, pred in enumerate(
-            cls.__collect_used_preds(ent_pred_snippets, pred_pred_snippets)
+        assert len(ent_rel_snippets) > 0
+        ents = set(ent_rel_snippets.keys())
+        rel_idx = dict()
+        for idx, rel in enumerate(
+            cls.__collect_used_rels(ent_rel_snippets, rel_rel_snippets)
         ):
-            pred_idx[pred] = idx
+            rel_idx[rel] = idx
         init_combine = Combination(copy(ents))
         res = []
         # 选择邻接片段数量最少的实体作为组合起点
-        start_ent = cls.__select_start_ent(ent_pred_snippets, pred_pred_snippets)
+        start_ent = cls.__select_start_ent(ent_rel_snippets, rel_rel_snippets)
         trips = []
-        for pred in ent_pred_snippets[start_ent]["fwd"]:
-            trips.append((start_ent, pred, None))
-        for pred in ent_pred_snippets[start_ent]["rev"]:
-            trips.append((None, pred, start_ent))
+        for rel in ent_rel_snippets[start_ent]["fwd"]:
+            trips.append((start_ent, rel, None))
+        for rel in ent_rel_snippets[start_ent]["rev"]:
+            trips.append((None, rel, start_ent))
         for trip in trips:
             temp = Combination.clone(init_combine)
             adjacent_info = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
-            if trip[1] in pred_pred_snippets:
-                adjacent_info = pred_pred_snippets[trip[1]]
-            temp.add_trip(trip[0], trip[1], trip[2], adjacent_info, pred_idx[trip[1]])
+            if trip[1] in rel_rel_snippets:
+                adjacent_info = rel_rel_snippets[trip[1]]
+            temp.add_trip(trip[0], trip[1], trip[2], adjacent_info, rel_idx[trip[1]])
             if cls.__meet_candi_cond(temp):
                 res.append(temp)
             if cls.__meet_expand_cond(temp):
                 cls.__combine(
-                    ent_pred_snippets,
-                    pred_pred_snippets,
-                    pred_idx,
+                    ent_rel_snippets,
+                    rel_rel_snippets,
+                    rel_idx,
                     temp,
                     res,
                     instantiable_check,
@@ -222,12 +222,12 @@ class EPCombiner:
         return res
 
     @classmethod
-    def __collect_used_preds(cls, ent_preds: dict, pred_preds: dict) -> Set[str]:
+    def __collect_used_rels(cls, ent_rels: dict, rel_rels: dict) -> Set[str]:
         ans = set()
-        for ent in ent_preds:
-            ans |= set(ent_preds[ent]["fwd"])
-            ans |= set(ent_preds[ent]["rev"])
-        ans |= pred_preds.keys()
+        for ent in ent_rels:
+            ans |= set(ent_rels[ent]["fwd"])
+            ans |= set(ent_rels[ent]["rev"])
+        ans |= rel_rels.keys()
         return ans
 
     @classmethod
@@ -240,19 +240,19 @@ class EPCombiner:
 
     @classmethod
     def __select_start_ent(
-        cls, ent_pred_snippets: dict, pred_pred_snippets: dict
+        cls, ent_rel_snippets: dict, rel_rel_snippets: dict
     ) -> str:
         ents_score = []
-        for ent in ent_pred_snippets:
+        for ent in ent_rel_snippets:
             count = 0
-            for pred in ent_pred_snippets[ent]["fwd"]:
-                if pred in pred_pred_snippets:
-                    count += len(pred_pred_snippets[pred]["O-S"])
-                    count += len(pred_pred_snippets[pred]["O-O"])
-            for pred in ent_pred_snippets[ent]["rev"]:
-                if pred in pred_pred_snippets:
-                    count += len(pred_pred_snippets[pred]["S-S"])
-                    count += len(pred_pred_snippets[pred]["S-O"])
+            for rel in ent_rel_snippets[ent]["fwd"]:
+                if rel in rel_rel_snippets:
+                    count += len(rel_rel_snippets[rel]["O-S"])
+                    count += len(rel_rel_snippets[rel]["O-O"])
+            for rel in ent_rel_snippets[ent]["rev"]:
+                if rel in rel_rel_snippets:
+                    count += len(rel_rel_snippets[rel]["S-S"])
+                    count += len(rel_rel_snippets[rel]["S-O"])
             ents_score.append((ent, count))
         ents_score.sort(key=lambda x: x[1])
         return ents_score[0][0]
@@ -260,9 +260,9 @@ class EPCombiner:
     @classmethod
     def __combine(
         cls,
-        ent_pred_snippets: dict,
-        pred_pred_snippets: dict,
-        pred_idx: dict,
+        ent_rel_snippets: dict,
+        rel_rel_snippets: dict,
+        rel_idx: dict,
         current_combi: Combination,
         res: list,
         instantiable_check: bool = False,
@@ -277,27 +277,27 @@ class EPCombiner:
             rev_candi = node_info[node]["rev_candi"]
             bound_idx = node_info[node]["bound_idx"]
             # 遍历检查正向候选谓词
-            for pred in fwd_candi:
-                # 为了规避重复组合的情况，要求在每个变量节点添加的 pred idx 具有不递减的倾向 (初始为0)
-                # if pred_idx[pred] < bound_idx:
+            for rel in fwd_candi:
+                # 为了规避重复组合的情况，要求在每个变量节点添加的 rel idx 具有不递减的倾向 (初始为0)
+                # if rel_idx[rel] < bound_idx:
                 #   continue
-                candi_trip.append((node, pred, None))
+                candi_trip.append((node, rel, None))
                 # 考虑同时添加一个节点约束的情况
                 topic_ents = cls.__choose_candi_topic_ents(
-                    uncombined_ents, ent_pred_snippets, pred, "rev"
+                    uncombined_ents, ent_rel_snippets, rel, "rev"
                 )
                 for ent in topic_ents:
-                    candi_trip.append((node, pred, ent))
+                    candi_trip.append((node, rel, ent))
             # 遍历检查逆向候选谓词 (同理)
-            for pred in rev_candi:
-                # if pred_idx[pred] < bound_idx:
+            for rel in rev_candi:
+                # if rel_idx[rel] < bound_idx:
                 #   continue
-                candi_trip.append((None, pred, node))
+                candi_trip.append((None, rel, node))
                 topic_ents = cls.__choose_candi_topic_ents(
-                    uncombined_ents, ent_pred_snippets, pred, "fwd"
+                    uncombined_ents, ent_rel_snippets, rel, "fwd"
                 )
                 for ent in topic_ents:
-                    candi_trip.append((ent, pred, node))
+                    candi_trip.append((ent, rel, node))
         # Step3: 根据候选三元组对当前组合进行基础判定和拓展
         for trip in candi_trip:
             temp = Combination.clone(current_combi)
@@ -305,8 +305,8 @@ class EPCombiner:
                 trip[0],
                 trip[1],
                 trip[2],
-                pred_pred_snippets[trip[1]],
-                pred_idx[trip[1]],
+                rel_rel_snippets[trip[1]],
+                rel_idx[trip[1]],
             )
             candi_flag = cls.__meet_candi_cond(temp)
             expand_flag = cls.__meet_expand_cond(temp)
@@ -321,9 +321,9 @@ class EPCombiner:
                 res.append(temp)
             if expand_flag:
                 cls.__combine(
-                    ent_pred_snippets,
-                    pred_pred_snippets,
-                    pred_idx,
+                    ent_rel_snippets,
+                    rel_rel_snippets,
+                    rel_idx,
                     temp,
                     res,
                     instantiable_check,
@@ -332,12 +332,12 @@ class EPCombiner:
 
     @classmethod
     def __choose_candi_topic_ents(
-        cls, candi_ents: Set[str], ent_pred_snippets: dict, target_pred: str, dir: str
+        cls, candi_ents: Set[str], ent_rel_snippets: dict, target_rel: str, dir: str
     ):
         ans = []
         for ent in candi_ents:
-            for pred in ent_pred_snippets[ent][dir]:
-                if pred == target_pred:
+            for rel in ent_rel_snippets[ent][dir]:
+                if rel == target_rel:
                     ans.append(ent)
                     break
         return ans

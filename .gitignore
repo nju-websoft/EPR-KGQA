@@ -2,7 +2,10 @@
 **/.vscode/
 .idea
 .ipynb_checkpoints/
-data/
+data/cache/
+data/CWQ/
+data/WebQSP/
+data/log/
 bert-base-uncased/
 NSM_H/datasets
 NSM_H/checkpoint

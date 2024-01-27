@@ -1,5 +1,5 @@
-# IRQA
-Research Project for Weakly Supervised KBQA from An Information Retrieval Perspective
+# EPR for WWW2024
+Research Project for Evidence Pattern Retrieval for the Web Conference 2024
 
 ## 项目结构：
   - my_utils
@@ -7,7 +7,7 @@ Research Project for Weakly Supervised KBQA from An Information Retrieval Perspe
     - data_item.py
     - io_utils.py
     - logger.py
-    - pred_base.py
+    - rel_base.py
     - ap_utils.py
     - ep_utils.py
   - preprocess

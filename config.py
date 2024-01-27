@@ -23,12 +23,14 @@ class Config:
     ds_sr_all = config["dataset"]["SR_cache_all"]
 
     # cache
-    cache_pred_info = "data/cache/predicate_info_fb.json"
+    cache_dir = f"data/cache/{ds_tag}"
+    cache_rel_info = "data/cache/relation_info_fb.json"
     cache_type_info = "data/cache/type_info_fb.json"
-    cache_pred_conn = "data/cache/pred_conn_fb.jsonl"
+    cache_rel_conn = "data/cache/rel_conn_fb.jsonl"
     cache_path = config["cache"]["searched_path"]
 
     # log
+    log_dir = "data/log/"
     log_process = config["log"]["process_log"]
     log_level = config["log"]["level"]
 
@@ -46,14 +48,14 @@ class Config:
 
     # ep generation
     ep_generation_dir = config["ep_generation"]["work_dir"]
-    max_combine_preds = config["ep_generation"]["max_combine_preds"]
+    max_combine_rels = config["ep_generation"]["max_combine_rels"]
     ep_rank_td_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_ep_rank_td.jsonl"
     candi_ep_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_candi_ep.json"
     ranked_ep_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_ranked_ep.json"
 
-    # ans selection
-    ans_selection_dir = config["ans_selection"]["work_dir"]
-    ep_topk = config["ans_selection"]["ep_topk"]
+    # subgraph extraction
+    subgraph_extraction_dir = config["subgraph_extraction"]["work_dir"]
+    ep_topk = config["subgraph_extraction"]["ep_topk"]
     feature = lambda: f"top{Config.ap_topk}_ap_top{Config.ep_topk}_ep"
-    ans_rank_td_f = lambda split: f"{Config.ans_selection_dir}{Config.ds_tag}_{split}_{Config.feature()}_ans_rank_td.json"
-    induced_subg_f = lambda split: f"{Config.ans_selection_dir}{Config.ds_tag}_{split}_{Config.feature()}_instantiated_subg.json"
+    ans_rank_td_f = lambda split: f"{Config.subgraph_extraction_dir}{Config.ds_tag}_{split}_{Config.feature()}_ans_rank_td.json"
+    induced_subg_f = lambda split: f"{Config.subgraph_extraction_dir}{Config.ds_tag}_{split}_{Config.feature()}_instantiated_subg.json"

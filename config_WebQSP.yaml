@@ -22,20 +22,20 @@ global_var:
   # control whether to perform heuristic path search in bulk (if "cache/searched_path" do not exists, set it to True)
   bulk_path_search: True
   # worker number of multi process
-  worker_num: 5
+  worker_num: 6
 
 ap_retrieval:
   # working directory
   work_dir: "data/WebQSP/ap_retrieval/"
-  # pred-pred snippets topk
+  # rel-rel snippets topk
   ap_topk: 100
 
 ep_generation:
   # working directory
   work_dir: "data/WebQSP/ep_generation/"
   # max combine count
-  max_combine_preds: 3
+  max_combine_rels: 3
 
-ans_selection:
-  work_dir: "data/WebQSP/ans_selection/"
+subgraph_extraction:
+  work_dir: "data/WebQSP/subgraph_extraction/"
   ep_topk: 1

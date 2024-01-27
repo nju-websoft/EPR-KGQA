@@ -8,95 +8,97 @@ from config import Config
 from my_utils.freebase import FreebaseODBC
 from my_utils.io_utils import append_jsonl, run_multiprocess
 from my_utils.logger import Logger
-from my_utils.pred_base import PredBase
+from my_utils.rel_base import relBase
 
 
 class AdjacentInfoPrepare:
+    if not os.path.exists(Config.cache_dir):
+        os.makedirs(Config.cache_dir)
     logger = Logger.get_logger("AdjacentInfoPrepare", True)
 
     @classmethod
     def load_global_cache(cls):
-        cls.logger.info(">>> prepare predicates' adjacent info...")
-        processed_pred_set = set()
-        preds_to_deal = []
-        if os.path.exists(Config.cache_pred_conn):
-            with open(Config.cache_pred_conn) as f:
+        cls.logger.info(">>> prepare relations' adjacent info...")
+        processed_rel_set = set()
+        rels_to_deal = []
+        if os.path.exists(Config.cache_rel_conn):
+            with open(Config.cache_rel_conn) as f:
                 for line in f:
-                    processed_pred_set.add(json.loads(line)["id"])
+                    processed_rel_set.add(json.loads(line)["id"])
         cls.logger.debug(
-            f"{len(processed_pred_set)} preds' adjacent info already in cache"
+            f"{len(processed_rel_set)} rels' adjacent info already in cache"
         )
 
-        for pred in PredBase.pred_info_dict:
-            if pred not in processed_pred_set:
-                preds_to_deal.append(pred)
+        for rel in relBase.rel_info_dict:
+            if rel not in processed_rel_set:
+                rels_to_deal.append(rel)
         cls.logger.debug(
-            f"{len(preds_to_deal)} preds' adjacent info need to be queried"
+            f"{len(rels_to_deal)} rels' adjacent info need to be queried"
         )
 
         # 多进程查询代码
-        def mp_query_pred_conn(filepath, pid, queue):
+        def mp_query_rel_conn(filepath, pid, queue):
             while True:
-                pred = queue.get()
-                if pred == None:
+                rel = queue.get()
+                if rel == None:
                     break
-                info = FreebaseODBC.query_pred_conn(pred)
-                res = {"id": pred, "pred_conn": info}
-                cls.logger.debug(f"pid:{pid}, pred:{pred}")
+                info = FreebaseODBC.query_rel_conn(rel)
+                res = {"id": rel, "rel_conn": info}
+                cls.logger.debug(f"pid:{pid}, rel:{rel}")
                 append_jsonl(res, filepath)
 
         run_multiprocess(
-            mp_query_pred_conn,
-            [Config.cache_pred_conn],
-            preds_to_deal,
+            mp_query_rel_conn,
+            [Config.cache_rel_conn],
+            rels_to_deal,
             Config.worker_num,
         )
 
         # 读取 cache
-        cls.global_pred_pred_adjacent_info = dict()
-        with open(Config.cache_pred_conn) as f:
+        cls.global_rel_rel_adjacent_info = dict()
+        with open(Config.cache_rel_conn) as f:
             for line in f:
                 temp = json.loads(line)
-                cls.global_pred_pred_adjacent_info[temp["id"]] = temp["pred_conn"]
+                cls.global_rel_rel_adjacent_info[temp["id"]] = temp["rel_conn"]
 
     @classmethod
-    def get_ent_pred_adjacent_info(
-        cls, ents: List[str], candi_preds: List[str]
+    def get_ent_rel_adjacent_info(
+        cls, ents: List[str], candi_rels: List[str]
     ) -> Dict[str, Dict[str, List[str]]]:
         ans = dict()
         for ent in ents:
-            preds = set(candi_preds)
+            rels = set(candi_rels)
             ans[ent] = {"fwd": [], "rev": []}
-            neighbor_preds = FreebaseODBC.query_neighbor_preds([ent])
-            fwd_preds = list(
-                set([pred for pred in neighbor_preds if not pred.endswith("_Rev")])
-                & preds
+            neighbor_rels = FreebaseODBC.query_neighbor_rels([ent])
+            fwd_rels = list(
+                set([rel for rel in neighbor_rels if not rel.endswith("_Rev")])
+                & rels
             )
-            rev_preds = list(
-                set([pred[:-4] for pred in neighbor_preds if pred.endswith("_Rev")])
-                & preds
+            rev_rels = list(
+                set([rel[:-4] for rel in neighbor_rels if rel.endswith("_Rev")])
+                & rels
             )
-            ans[ent]["fwd"] = fwd_preds
-            ans[ent]["rev"] = rev_preds
+            ans[ent]["fwd"] = fwd_rels
+            ans[ent]["rev"] = rev_rels
         return ans
 
     @classmethod
-    def get_pred_pred_adjacent_info(
-        cls, candi_preds: List[str]
+    def get_rel_rel_adjacent_info(
+        cls, candi_rels: List[str]
     ) -> Dict[str, Dict[str, List[str]]]:
         # 缓存信息使用时才载入内存
-        if cls.global_pred_pred_adjacent_info == None:
+        if cls.global_rel_rel_adjacent_info == None:
             cls.load_global_cache()
         ans = dict()
-        candi_preds = set(candi_preds)
-        for pred in candi_preds:
-            ans[pred] = {"S-S": [], "S-O": [], "O-O": [], "O-S": []}
-            if pred not in cls.global_pred_pred_adjacent_info:
+        candi_rels = set(candi_rels)
+        for rel in candi_rels:
+            ans[rel] = {"S-S": [], "S-O": [], "O-O": [], "O-S": []}
+            if rel not in cls.global_rel_rel_adjacent_info:
                 continue
             for tag in ["S-S", "S-O", "O-O", "O-S"]:
-                for raw_pred in cls.global_pred_pred_adjacent_info[pred][tag]:
-                    if raw_pred in candi_preds:
-                        ans[pred][tag].append(raw_pred)
+                for raw_rel in cls.global_rel_rel_adjacent_info[rel][tag]:
+                    if raw_rel in candi_rels:
+                        ans[rel][tag].append(raw_rel)
         return ans
 
     @classmethod
@@ -107,103 +109,103 @@ class AdjacentInfoPrepare:
         ent_conn_info = dict()
         for trip in trips:
             subj = trip[0]
-            pred = trip[1]
+            rel = trip[1]
             obj = trip[2]
             if dedup:
                 if subj not in ent_conn_info:
                     ent_conn_info[subj] = {"subj": set(), "obj": set()}
-                ent_conn_info[subj]["subj"].add(pred)
+                ent_conn_info[subj]["subj"].add(rel)
                 if obj not in ent_conn_info:
                     ent_conn_info[obj] = {"subj": set(), "obj": set()}
-                ent_conn_info[obj]["obj"].add(pred)
+                ent_conn_info[obj]["obj"].add(rel)
             else:
                 if subj not in ent_conn_info:
                     ent_conn_info[subj] = {"subj": [], "obj": []}
-                ent_conn_info[subj]["subj"].append(pred)
+                ent_conn_info[subj]["subj"].append(rel)
                 if obj not in ent_conn_info:
                     ent_conn_info[obj] = {"subj": [], "obj": []}
-                ent_conn_info[obj]["obj"].append(pred)
+                ent_conn_info[obj]["obj"].append(rel)
         # print(ent_conn_info)
 
-        # collect pred-pred snippets
-        pred_pred_snippets = dict()
+        # collect rel-rel snippets
+        rel_rel_snippets = dict()
         for ent in ent_conn_info:
-            s_preds = list(ent_conn_info[ent]["subj"])
-            o_preds = list(ent_conn_info[ent]["obj"])
+            s_rels = list(ent_conn_info[ent]["subj"])
+            o_rels = list(ent_conn_info[ent]["obj"])
             # Case1: S-S
-            for i in range(len(s_preds)):
-                for j in range(i + 1, len(s_preds)):
-                    rel1 = s_preds[i]
-                    rel2 = s_preds[j]
-                    if rel1 not in pred_pred_snippets:
-                        pred_pred_snippets[rel1] = {
+            for i in range(len(s_rels)):
+                for j in range(i + 1, len(s_rels)):
+                    rel1 = s_rels[i]
+                    rel2 = s_rels[j]
+                    if rel1 not in rel_rel_snippets:
+                        rel_rel_snippets[rel1] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    if rel2 not in pred_pred_snippets:
-                        pred_pred_snippets[rel2] = {
+                    if rel2 not in rel_rel_snippets:
+                        rel_rel_snippets[rel2] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    pred_pred_snippets[rel1]["S-S"].add(rel2)
-                    pred_pred_snippets[rel2]["S-S"].add(rel1)
+                    rel_rel_snippets[rel1]["S-S"].add(rel2)
+                    rel_rel_snippets[rel2]["S-S"].add(rel1)
             # Case2: O-O
-            for i in range(len(o_preds)):
-                for j in range(i + 1, len(o_preds)):
-                    rel1 = o_preds[i]
-                    rel2 = o_preds[j]
-                    if rel1 not in pred_pred_snippets:
-                        pred_pred_snippets[rel1] = {
+            for i in range(len(o_rels)):
+                for j in range(i + 1, len(o_rels)):
+                    rel1 = o_rels[i]
+                    rel2 = o_rels[j]
+                    if rel1 not in rel_rel_snippets:
+                        rel_rel_snippets[rel1] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    if rel2 not in pred_pred_snippets:
-                        pred_pred_snippets[rel2] = {
+                    if rel2 not in rel_rel_snippets:
+                        rel_rel_snippets[rel2] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    pred_pred_snippets[rel1]["O-O"].add(rel2)
-                    pred_pred_snippets[rel2]["O-O"].add(rel1)
+                    rel_rel_snippets[rel1]["O-O"].add(rel2)
+                    rel_rel_snippets[rel2]["O-O"].add(rel1)
             # Case3: S-O, O-S
-            for i in range(len(s_preds)):
-                for j in range(len(o_preds)):
-                    rel1 = s_preds[i]
-                    rel2 = o_preds[j]
-                    if rel1 not in pred_pred_snippets:
-                        pred_pred_snippets[rel1] = {
+            for i in range(len(s_rels)):
+                for j in range(len(o_rels)):
+                    rel1 = s_rels[i]
+                    rel2 = o_rels[j]
+                    if rel1 not in rel_rel_snippets:
+                        rel_rel_snippets[rel1] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    if rel2 not in pred_pred_snippets:
-                        pred_pred_snippets[rel2] = {
+                    if rel2 not in rel_rel_snippets:
+                        rel_rel_snippets[rel2] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    pred_pred_snippets[rel1]["S-O"].add(rel2)
-                    pred_pred_snippets[rel2]["O-S"].add(rel1)
+                    rel_rel_snippets[rel1]["S-O"].add(rel2)
+                    rel_rel_snippets[rel2]["O-S"].add(rel1)
 
-        # collect ent-pred snippets
-        ent_pred_snippets = dict()
+        # collect ent-rel snippets
+        ent_rel_snippets = dict()
         for ent in ent_conn_info:
             if ent.startswith("?"):
                 continue
             else:
-                ent_pred_snippets[ent] = {"fwd": [], "rev": []}
-                for pred in ent_conn_info[ent]["subj"]:
-                    ent_pred_snippets[ent]["fwd"].append(pred)
-                for pred in ent_conn_info[ent]["obj"]:
-                    ent_pred_snippets[ent]["rev"].append(pred)
+                ent_rel_snippets[ent] = {"fwd": [], "rev": []}
+                for rel in ent_conn_info[ent]["subj"]:
+                    ent_rel_snippets[ent]["fwd"].append(rel)
+                for rel in ent_conn_info[ent]["obj"]:
+                    ent_rel_snippets[ent]["rev"].append(rel)
 
-        return ent_pred_snippets, pred_pred_snippets
+        return ent_rel_snippets, rel_rel_snippets

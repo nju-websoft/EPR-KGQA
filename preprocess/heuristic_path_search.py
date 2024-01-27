@@ -11,10 +11,10 @@ from my_utils.data_item import DataItem, load_ds_items
 from my_utils.freebase import FreebaseODBC
 from my_utils.io_utils import append_jsonl, read_jsonl_by_key
 from my_utils.logger import Logger
-from my_utils.pred_base import PredBase
+from my_utils.rel_base import relBase
 
 
-banned_base_preds = set(
+banned_base_rels = set(
     [
         "ns:type.type.instance",
         "ns:type.object.type",
@@ -78,59 +78,59 @@ def forward_search(
     # if path length exceeds the hop limit, then stop
     if len(cur_path) >= Config.max_hop_limit + 1:
         return
-    # step1: obtain all the predicates in the one-hop neighborhood
-    neighbor_preds = freebase.query_neighbor_preds(cur_path)
-    binary_preds, nary_preds = pred_classification(neighbor_preds, cur_path)
-    # step2: obtain predstr directly connected to the answer, if search succ, record path and return
-    predstrs_to_ans = freebase.query_predstr_to_ans(cur_path, nary_preds, ans_ents)
-    if len(predstrs_to_ans) > 0:
-        for predstr in predstrs_to_ans:
+    # step1: obtain all the relations in the one-hop neighborhood
+    neighbor_rels = freebase.query_neighbor_rels(cur_path)
+    binary_rels, nary_rels = rel_classification(neighbor_rels, cur_path)
+    # step2: obtain relstr directly connected to the answer, if search succ, record path and return
+    relstrs_to_ans = freebase.query_relstr_to_ans(cur_path, nary_rels, ans_ents)
+    if len(relstrs_to_ans) > 0:
+        for relstr in relstrs_to_ans:
             new_path = deepcopy(cur_path)
-            new_path.append(predstr)
+            new_path.append(relstr)
             all_paths.append(new_path)
-    # step3: obtain n-ary predstrs related to question, then do search on a new base path
+    # step3: obtain n-ary relstrs related to question, then do search on a new base path
     else:
-        nary_predstrs = freebase.query_nary_predstrs(cur_path, nary_preds)
-        related_predstrs = filter_related_predstrs(
-            nary_predstrs + binary_preds, key_lexical
+        nary_relstrs = freebase.query_nary_relstrs(cur_path, nary_rels)
+        related_relstrs = filter_related_relstrs(
+            nary_relstrs + binary_rels, key_lexical
         )
-        for predstr in related_predstrs:
+        for relstr in related_relstrs:
             new_path = deepcopy(cur_path)
-            new_path.append(predstr)
+            new_path.append(relstr)
             if satisfy_base_path_condition(new_path):
                 forward_search(
                     topic_ent, ans_ents, new_path, all_paths, freebase, key_lexical
                 )
 
 
-def pred_classification(preds: List[str], base_path: List[str]) -> Tuple:
-    binary_preds = []
-    nary_preds = []
-    for pred in preds:
+def rel_classification(rels: List[str], base_path: List[str]) -> Tuple:
+    binary_rels = []
+    nary_rels = []
+    for rel in rels:
         # 不能加入新的 base path 的谓词没有分类的意义
-        if not satisfy_base_path_condition(deepcopy(base_path) + [pred]):
+        if not satisfy_base_path_condition(deepcopy(base_path) + [rel]):
             continue
-        if PredBase.reach_cvt(pred):
-            nary_preds.append(pred)
+        if relBase.reach_cvt(rel):
+            nary_rels.append(rel)
         else:
-            binary_preds.append(pred)
-    return binary_preds, nary_preds
+            binary_rels.append(rel)
+    return binary_rels, nary_rels
 
 
-def filter_related_predstrs(predstrs: List[str], key_lexical: Set[str]) -> List[str]:
-    related_predstr = []
-    for pred_str in predstrs:
-        if len(get_predstr_key_lexical(pred_str) & key_lexical) > 0:
-            related_predstr.append(pred_str)
-    return related_predstr
+def filter_related_relstrs(relstrs: List[str], key_lexical: Set[str]) -> List[str]:
+    related_relstr = []
+    for rel_str in relstrs:
+        if len(get_relstr_key_lexical(rel_str) & key_lexical) > 0:
+            related_relstr.append(rel_str)
+    return related_relstr
 
 
-def get_predstr_key_lexical(pred_str: str) -> Set[str]:
+def get_relstr_key_lexical(rel_str: str) -> Set[str]:
     tokens = set()
-    for pred in pred_str.split("..."):
-        if pred.endswith("_Rev"):
-            pred = pred[:-4]
-        tokens |= PredBase.get_pred_keywords(pred)
+    for rel in rel_str.split("..."):
+        if rel.endswith("_Rev"):
+            rel = rel[:-4]
+        tokens |= relBase.get_rel_keywords(rel)
     lemmas = DataItem.get_lemmas(tokens)
     return tokens | lemmas
 
@@ -139,18 +139,18 @@ def satisfy_base_path_condition(base_path: List[str]) -> bool:
     """任何可能生成新的 base path 的地方都需要通过这个检查"""
     # Rule1: Base Path 中不能出现实例转移到类型或从类型转移到实例的情况
     path_str = " ".join(base_path)
-    for pred in banned_base_preds:
-        if path_str.find(pred) != -1:
+    for rel in banned_base_rels:
+        if path_str.find(rel) != -1:
             return False
     # Rule2: Path 中不能存在直接往回走的情况(两个相邻的逆关系)
-    preds = []
-    for predstr in base_path:
-        preds += predstr.split("...")
-    for idx in range(len(preds))[1:]:
-        if idx + 1 < len(preds):
-            first = preds[idx]
-            second = preds[idx + 1]
-            if PredBase.is_reverse_pair(first, second):
+    rels = []
+    for relstr in base_path:
+        rels += relstr.split("...")
+    for idx in range(len(rels))[1:]:
+        if idx + 1 < len(rels):
+            first = rels[idx]
+            second = rels[idx + 1]
+            if relBase.is_reverse_pair(first, second):
                 return False
     return True
 

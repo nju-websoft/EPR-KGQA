@@ -6,24 +6,24 @@ from typing import *
 from tqdm import tqdm
 
 # Self-defined Modules
-from my_utils.pred_base import PredBase
+from my_utils.rel_base import relBase
 
 
-def filter_topk_preds(ranked_pred_list: List[str], topk: int, deduplicate: bool) -> List[str]:
-    # 预处理，确保 predicate 都有前缀
-    for idx, pred in enumerate(ranked_pred_list):
-        if not pred.startswith("ns:"):
-            ranked_pred_list[idx] = "ns:" + pred
+def filter_topk_rels(ranked_rel_list: List[str], topk: int, deduplicate: bool) -> List[str]:
+    # 预处理，确保 relation 都有前缀
+    for idx, rel in enumerate(ranked_rel_list):
+        if not rel.startswith("ns:"):
+            ranked_rel_list[idx] = "ns:" + rel
     temp_list = []
     temp_set = set()
     if deduplicate:
-        for pred in ranked_pred_list:
-            if PredBase.get_reverse(pred) in temp_set:
+        for rel in ranked_rel_list:
+            if relBase.get_reverse(rel) in temp_set:
                 continue
-            temp_list.append(pred)
-            temp_set.add(pred)
+            temp_list.append(rel)
+            temp_set.add(rel)
     else:
-        temp_list = ranked_pred_list
+        temp_list = ranked_rel_list
     return temp_list[:topk]
 
 
@@ -36,27 +36,27 @@ def get_snippet_str_set(snippets_info: dict) -> Set[str]:
     return ans
 
 
-def expand_ent_snippet_str_set(ent: str, pred: str, tag: str) -> Set[str]:
+def expand_ent_snippet_str_set(ent: str, rel: str, tag: str) -> Set[str]:
     trans_dict = {"rev": "fwd", "fwd": "rev"}
     ans = set()
-    ans.add(" ".join([ent, pred, tag]))
-    rev = PredBase.get_reverse(pred)
+    ans.add(" ".join([ent, rel, tag]))
+    rev = relBase.get_reverse(rel)
     if rev != None:
         new_tag = trans_dict[tag]
         ans.add(" ".join([ent, rev, new_tag]))
     return ans
 
 
-def expand_pred_snippet_str_set(pred1: str, pred2: str, tag: str) -> Set[str]:
+def expand_rel_snippet_str_set(rel1: str, rel2: str, tag: str) -> Set[str]:
     trans_dict = {"S": "O", "O": "S"}
     ans = set()
-    ans.add(" ".join([pred1, pred2, tag]))
-    rev1 = PredBase.get_reverse(pred1)
-    rev2 = PredBase.get_reverse(pred2)
+    ans.add(" ".join([rel1, rel2, tag]))
+    rev1 = relBase.get_reverse(rel1)
+    rev2 = relBase.get_reverse(rel2)
     if rev2 != None:
-        ans.add(" ".join([pred1, rev2, tag[0] + "-" + trans_dict[tag[2]]]))
+        ans.add(" ".join([rel1, rev2, tag[0] + "-" + trans_dict[tag[2]]]))
     if rev1 != None:
-        ans.add(" ".join([rev1, pred2, trans_dict[tag[0]] + "-" + tag[2]]))
+        ans.add(" ".join([rev1, rel2, trans_dict[tag[0]] + "-" + tag[2]]))
     if rev1 != None and rev2 != None:
         ans.add(" ".join([rev1, rev2, trans_dict[tag[0]] + "-" + trans_dict[tag[2]]]))
     return ans
@@ -80,17 +80,17 @@ def parse_triplets_from_serialized_ep(ep: str) -> List[List[str]]:
     return trips
 
 
-def accumulate_pred_pred_statistics(
-    pred_preds: Dict[str, Dict[str, List[str]]], statistics: Dict[str, float]
+def accumulate_rel_rel_statistics(
+    rel_rels: Dict[str, Dict[str, List[str]]], statistics: Dict[str, float]
 ):
-    if len(pred_preds) == 0:
+    if len(rel_rels) == 0:
         return
     tags = ["S-S", "S-O", "O-O", "O-S"]
     temp = {"num": 0, "S-S": 0, "S-O": 0, "O-O": 0, "O-S": 0}
-    for pred in pred_preds:
+    for rel in rel_rels:
         temp["num"] += 1
         for tag in tags:
-            temp[tag] += len(pred_preds[pred][tag])
+            temp[tag] += len(rel_rels[rel][tag])
     statistics["num"] += temp["num"]
     for tag in tags:
         statistics[tag] += temp[tag] / temp["num"]
@@ -104,12 +104,12 @@ def normalize_triplet(triplet: List[str]) -> List[str]:
 
 
 def parse_pp_info_from_ranked_snippets(
-    ranked_snippets: List[str], ranked_preds: List[str]
+    ranked_snippets: List[str], ranked_rels: List[str]
 ) -> Dict[str, Dict[str, List[str]]]:
     tag_map = {"S-S": "S-S", "S-O": "O-S", "O-S": "S-O", "O-O": "O-O"}
     ans = dict()
-    for pred in ranked_preds:
-        ans[pred] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
+    for rel in ranked_rels:
+        ans[rel] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
     for snp in ranked_snippets:
         temp = snp.split(" ")
         p1 = "ns:" + temp[0]
@@ -121,39 +121,39 @@ def parse_pp_info_from_ranked_snippets(
 
 
 def parse_snippet_dict_from_strs(
-    topic_ents: List[str], ent_pred_strs: List[str], pred_pred_strs: List[str]
+    topic_ents: List[str], ent_rel_strs: List[str], rel_rel_strs: List[str]
 ) -> Tuple[dict, dict]:
     pp_tag_map = {"S-S": "S-S", "S-O": "O-S", "O-S": "S-O", "O-O": "O-O"}
-    ent_preds = dict()
-    pred_preds = dict()
+    ent_rels = dict()
+    rel_rels = dict()
     for ent in topic_ents:
-        ent_preds[ent] = {"fwd": set(), "rev": set()}
+        ent_rels[ent] = {"fwd": set(), "rev": set()}
 
-    for ep in ent_pred_strs:
+    for ep in ent_rel_strs:
         temp = ep.split(" ")
         ent = "ns:" + temp[0]
         tag = temp[1]
-        pred = "ns:" + temp[2]
-        if ent not in ent_preds:
-            ent_preds[ent] = {"fwd": set(), "rev": set()}
-        ent_preds[ent][tag].add(pred)
+        rel = "ns:" + temp[2]
+        if ent not in ent_rels:
+            ent_rels[ent] = {"fwd": set(), "rev": set()}
+        ent_rels[ent][tag].add(rel)
         # 补充 pp 中的信息
-        if pred not in pred_preds:
-            pred_preds[pred] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
+        if rel not in rel_rels:
+            rel_rels[rel] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
 
-    for pp in pred_pred_strs:
+    for pp in rel_rel_strs:
         temp = pp.split(" ")
         p1 = "ns:" + temp[0]
         tag = temp[1]
         p2 = "ns:" + temp[2]
-        if p1 not in pred_preds:
-            pred_preds[p1] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
-        if p2 not in pred_preds:
-            pred_preds[p2] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
-        pred_preds[p1][tag].add(p2)
-        pred_preds[p2][pp_tag_map[tag]].add(p1)
+        if p1 not in rel_rels:
+            rel_rels[p1] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
+        if p2 not in rel_rels:
+            rel_rels[p2] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
+        rel_rels[p1][tag].add(p2)
+        rel_rels[p2][pp_tag_map[tag]].add(p1)
 
-    return ent_preds, pred_preds
+    return ent_rels, rel_rels
 
 
 def filter_topk_aps(ranked_aps: List[dict], topk: int) -> List[dict]:
@@ -163,7 +163,7 @@ def filter_topk_aps(ranked_aps: List[dict], topk: int) -> List[dict]:
     """
     trans_dict = {"S": "O", "O": "S"}
     for item in tqdm(ranked_aps):
-        used_preds = set()
+        used_rels = set()
         topk_aps = set()
         expanded_aps = set()
         # merge reversed-equivalent aps && filter topk
@@ -171,22 +171,22 @@ def filter_topk_aps(ranked_aps: List[dict], topk: int) -> List[dict]:
             if len(topk_aps) >= topk:
                 break
             temp = ap.split(" ")
-            pred1 = temp[0]
+            rel1 = temp[0]
             tag = temp[1]
-            pred2 = temp[2]
-            rev1 = PredBase.get_reverse("ns:" + pred1)
-            rev2 = PredBase.get_reverse("ns:" + pred2)
-            if rev1 != None and rev1[3::] in used_preds:
-                pred1 = rev1[3::]
+            rel2 = temp[2]
+            rev1 = relBase.get_reverse("ns:" + rel1)
+            rev2 = relBase.get_reverse("ns:" + rel2)
+            if rev1 != None and rev1[3::] in used_rels:
+                rel1 = rev1[3::]
                 tag = trans_dict[tag[0]] + tag[1] + tag[2]
-            used_preds.add(pred1)
-            if rev2 != None and rev2[3::] in used_preds:
-                pred2 = rev2[3::]
+            used_rels.add(rel1)
+            if rev2 != None and rev2[3::] in used_rels:
+                rel2 = rev2[3::]
                 tag = tag[0] + tag[1] + trans_dict[tag[2]]
-            used_preds.add(pred2)
-            topk_aps.add(" ".join([pred1, tag, pred2]))
+            used_rels.add(rel2)
+            topk_aps.add(" ".join([rel1, tag, rel2]))
             # expand ap by tag
             new_tag = tag[2] + tag[1] + tag[0]
-            expanded_aps.add(" ".join([pred2, new_tag, pred1]))
+            expanded_aps.add(" ".join([rel2, new_tag, rel1]))
         item["candidates"] = list(topk_aps | expanded_aps)
     return ranked_aps
