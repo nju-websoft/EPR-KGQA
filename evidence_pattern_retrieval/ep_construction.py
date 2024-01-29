@@ -173,7 +173,7 @@ class Combination:
         return new_obj
 
 
-""" 控制 snippet 的组合过程 """
+""" 控制 atomic patterns 的组合过程 """
 
 
 class EPCombiner:
@@ -182,38 +182,38 @@ class EPCombiner:
     @classmethod
     def combine(
         cls,
-        ent_rel_snippets: dict,
-        rel_rel_snippets: dict,
+        ent_rel_aps: dict,
+        rel_rel_aps: dict,
         instantiable_check: bool = False,
     ) -> List[Combination]:
-        assert len(ent_rel_snippets) > 0
-        ents = set(ent_rel_snippets.keys())
+        assert len(ent_rel_aps) > 0
+        ents = set(ent_rel_aps.keys())
         rel_idx = dict()
         for idx, rel in enumerate(
-            cls.__collect_used_rels(ent_rel_snippets, rel_rel_snippets)
+            cls.__collect_used_rels(ent_rel_aps, rel_rel_aps)
         ):
             rel_idx[rel] = idx
         init_combine = Combination(copy(ents))
         res = []
         # 选择邻接片段数量最少的实体作为组合起点
-        start_ent = cls.__select_start_ent(ent_rel_snippets, rel_rel_snippets)
+        start_ent = cls.__select_start_ent(ent_rel_aps, rel_rel_aps)
         trips = []
-        for rel in ent_rel_snippets[start_ent]["fwd"]:
+        for rel in ent_rel_aps[start_ent]["fwd"]:
             trips.append((start_ent, rel, None))
-        for rel in ent_rel_snippets[start_ent]["rev"]:
+        for rel in ent_rel_aps[start_ent]["rev"]:
             trips.append((None, rel, start_ent))
         for trip in trips:
             temp = Combination.clone(init_combine)
             adjacent_info = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
-            if trip[1] in rel_rel_snippets:
-                adjacent_info = rel_rel_snippets[trip[1]]
+            if trip[1] in rel_rel_aps:
+                adjacent_info = rel_rel_aps[trip[1]]
             temp.add_trip(trip[0], trip[1], trip[2], adjacent_info, rel_idx[trip[1]])
             if cls.__meet_candi_cond(temp):
                 res.append(temp)
             if cls.__meet_expand_cond(temp):
                 cls.__combine(
-                    ent_rel_snippets,
-                    rel_rel_snippets,
+                    ent_rel_aps,
+                    rel_rel_aps,
                     rel_idx,
                     temp,
                     res,
@@ -240,19 +240,19 @@ class EPCombiner:
 
     @classmethod
     def __select_start_ent(
-        cls, ent_rel_snippets: dict, rel_rel_snippets: dict
+        cls, ent_rel_aps: dict, rel_rel_aps: dict
     ) -> str:
         ents_score = []
-        for ent in ent_rel_snippets:
+        for ent in ent_rel_aps:
             count = 0
-            for rel in ent_rel_snippets[ent]["fwd"]:
-                if rel in rel_rel_snippets:
-                    count += len(rel_rel_snippets[rel]["O-S"])
-                    count += len(rel_rel_snippets[rel]["O-O"])
-            for rel in ent_rel_snippets[ent]["rev"]:
-                if rel in rel_rel_snippets:
-                    count += len(rel_rel_snippets[rel]["S-S"])
-                    count += len(rel_rel_snippets[rel]["S-O"])
+            for rel in ent_rel_aps[ent]["fwd"]:
+                if rel in rel_rel_aps:
+                    count += len(rel_rel_aps[rel]["O-S"])
+                    count += len(rel_rel_aps[rel]["O-O"])
+            for rel in ent_rel_aps[ent]["rev"]:
+                if rel in rel_rel_aps:
+                    count += len(rel_rel_aps[rel]["S-S"])
+                    count += len(rel_rel_aps[rel]["S-O"])
             ents_score.append((ent, count))
         ents_score.sort(key=lambda x: x[1])
         return ents_score[0][0]
@@ -260,8 +260,8 @@ class EPCombiner:
     @classmethod
     def __combine(
         cls,
-        ent_rel_snippets: dict,
-        rel_rel_snippets: dict,
+        ent_rel_aps: dict,
+        rel_rel_aps: dict,
         rel_idx: dict,
         current_combi: Combination,
         res: list,
@@ -284,7 +284,7 @@ class EPCombiner:
                 candi_trip.append((node, rel, None))
                 # 考虑同时添加一个节点约束的情况
                 topic_ents = cls.__choose_candi_topic_ents(
-                    uncombined_ents, ent_rel_snippets, rel, "rev"
+                    uncombined_ents, ent_rel_aps, rel, "rev"
                 )
                 for ent in topic_ents:
                     candi_trip.append((node, rel, ent))
@@ -294,7 +294,7 @@ class EPCombiner:
                 #   continue
                 candi_trip.append((None, rel, node))
                 topic_ents = cls.__choose_candi_topic_ents(
-                    uncombined_ents, ent_rel_snippets, rel, "fwd"
+                    uncombined_ents, ent_rel_aps, rel, "fwd"
                 )
                 for ent in topic_ents:
                     candi_trip.append((ent, rel, node))
@@ -305,7 +305,7 @@ class EPCombiner:
                 trip[0],
                 trip[1],
                 trip[2],
-                rel_rel_snippets[trip[1]],
+                rel_rel_aps[trip[1]],
                 rel_idx[trip[1]],
             )
             candi_flag = cls.__meet_candi_cond(temp)
@@ -321,8 +321,8 @@ class EPCombiner:
                 res.append(temp)
             if expand_flag:
                 cls.__combine(
-                    ent_rel_snippets,
-                    rel_rel_snippets,
+                    ent_rel_aps,
+                    rel_rel_aps,
                     rel_idx,
                     temp,
                     res,
@@ -332,11 +332,11 @@ class EPCombiner:
 
     @classmethod
     def __choose_candi_topic_ents(
-        cls, candi_ents: Set[str], ent_rel_snippets: dict, target_rel: str, dir: str
+        cls, candi_ents: Set[str], ent_rel_aps: dict, target_rel: str, dir: str
     ):
         ans = []
         for ent in candi_ents:
-            for rel in ent_rel_snippets[ent][dir]:
+            for rel in ent_rel_aps[ent][dir]:
                 if rel == target_rel:
                     ans.append(ent)
                     break

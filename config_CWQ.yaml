@@ -27,7 +27,7 @@ global_var:
 ap_retrieval:
   # working directory
   work_dir: "data/CWQ/ap_retrieval/"
-  # rel-rel snippets topk
+  # rel-rel aps topk
   ap_topk: 100
 
 ep_generation:

@@ -27,16 +27,16 @@ def filter_topk_rels(ranked_rel_list: List[str], topk: int, deduplicate: bool) -
     return temp_list[:topk]
 
 
-def get_snippet_str_set(snippets_info: dict) -> Set[str]:
+def get_rr_aps_str_set(rr_aps_info: dict) -> Set[str]:
     ans = set()
-    for item1 in snippets_info:
-        for tag in snippets_info[item1]:
-            for item2 in snippets_info[item1][tag]:
+    for item1 in rr_aps_info:
+        for tag in rr_aps_info[item1]:
+            for item2 in rr_aps_info[item1][tag]:
                 ans.add(" ".join([item1, item2, tag]))
     return ans
 
 
-def expand_ent_snippet_str_set(ent: str, rel: str, tag: str) -> Set[str]:
+def expand_ent_rel_aps_str_set(ent: str, rel: str, tag: str) -> Set[str]:
     trans_dict = {"rev": "fwd", "fwd": "rev"}
     ans = set()
     ans.add(" ".join([ent, rel, tag]))
@@ -47,7 +47,7 @@ def expand_ent_snippet_str_set(ent: str, rel: str, tag: str) -> Set[str]:
     return ans
 
 
-def expand_rel_snippet_str_set(rel1: str, rel2: str, tag: str) -> Set[str]:
+def expand_rel_rel_aps_str_set(rel1: str, rel2: str, tag: str) -> Set[str]:
     trans_dict = {"S": "O", "O": "S"}
     ans = set()
     ans.add(" ".join([rel1, rel2, tag]))
@@ -60,6 +60,18 @@ def expand_rel_snippet_str_set(rel1: str, rel2: str, tag: str) -> Set[str]:
     if rev1 != None and rev2 != None:
         ans.add(" ".join([rev1, rev2, trans_dict[tag[0]] + "-" + trans_dict[tag[2]]]))
     return ans
+
+
+def cover_gold_rr_aps(rel_rels, gold_rel_rels, check_rel=True) -> bool:
+    res = True
+    target_aps_str_set = set()
+    target_aps_str_set |= get_rr_aps_str_set(rel_rels)
+    if check_rel and res:
+        for rel1 in gold_rel_rels:
+            for tag in gold_rel_rels[rel1]:
+                for rel2 in gold_rel_rels[rel1][tag]:
+                    res = res and len(target_aps_str_set & expand_rel_rel_aps_str_set(rel1, rel2, tag)) != 0
+    return res
 
 
 def parse_triplets_from_serialized_ep(ep: str) -> List[List[str]]:
@@ -103,14 +115,14 @@ def normalize_triplet(triplet: List[str]) -> List[str]:
         return triplet
 
 
-def parse_pp_info_from_ranked_snippets(
-    ranked_snippets: List[str], ranked_rels: List[str]
+def parse_info_from_ranked_rr_aps(
+    ranked_rr_aps: List[str], ranked_rels: List[str]
 ) -> Dict[str, Dict[str, List[str]]]:
     tag_map = {"S-S": "S-S", "S-O": "O-S", "O-S": "S-O", "O-O": "O-O"}
     ans = dict()
     for rel in ranked_rels:
         ans[rel] = {"S-S": set(), "S-O": set(), "O-S": set(), "O-O": set()}
-    for snp in ranked_snippets:
+    for snp in ranked_rr_aps:
         temp = snp.split(" ")
         p1 = "ns:" + temp[0]
         tag = temp[1]
@@ -120,7 +132,7 @@ def parse_pp_info_from_ranked_snippets(
     return ans
 
 
-def parse_snippet_dict_from_strs(
+def parse_aps_dict_from_strs(
     topic_ents: List[str], ent_rel_strs: List[str], rel_rel_strs: List[str]
 ) -> Tuple[dict, dict]:
     pp_tag_map = {"S-S": "S-S", "S-O": "O-S", "O-S": "S-O", "O-O": "O-O"}

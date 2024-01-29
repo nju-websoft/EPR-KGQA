@@ -21,14 +21,20 @@ class Config:
     ds_dev = config["dataset"]["dev"]
     ds_test = config["dataset"]["test"]
     ds_sr_all = config["dataset"]["SR_cache_all"]
-
+    ds_split_f = None
+    if ds_tag == 'CWQ':
+        ds_split_f = lambda split: f"data/dataset/CWQ/ComplexWebQuestions_{split}.json"
+    elif ds_tag == 'WebQSP':
+        ds_split_f = lambda split: f"data/dataset/WebQSP/{split}_simple.jsonl"
+    
     # cache
     cache_dir = f"data/cache/{ds_tag}"
     cache_rel_info = "data/cache/relation_info_fb.json"
     cache_type_info = "data/cache/type_info_fb.json"
     cache_rel_conn = "data/cache/rel_conn_fb.jsonl"
+    cache_rr_aps = "data/cache/rr_aps_fb.json"
     cache_path = config["cache"]["searched_path"]
-
+    
     # log
     log_dir = "data/log/"
     log_process = config["log"]["process_log"]
@@ -43,7 +49,7 @@ class Config:
     # ap retrieval
     ap_retrieval_dir = config["ap_retrieval"]["work_dir"]
     ap_topk = config["ap_retrieval"]["ap_topk"]
-    ap_retrieve_td_f = lambda split: f"{Config.ap_retrieval_dir}{split}_ap_retrieve_td.json"
+    ap_retrieval_td_f = lambda split: f"{Config.ap_retrieval_dir}{split}_ap_retrieve_td.json"
     retrieved_ap_f = lambda split: f"{Config.ap_retrieval_dir}{split}_ranked_ap.json"
 
     # ep generation

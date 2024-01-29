@@ -8,19 +8,10 @@ from tqdm import tqdm
 # Self-defined Modules
 from config import Config
 from evidence_pattern_retrieval.ep_construction import EPCombiner
-from my_utils.ap_utils import filter_topk_aps, parse_snippet_dict_from_strs
+from my_utils.ap_utils import filter_topk_aps
 from my_utils.data_item import DataItem, load_ds_items
 from my_utils.ep_utils import *
 from my_utils.io_utils import *
-
-
-def snippet_dict_to_str_list(snippet_dict) -> List[str]:
-    ans = []
-    for item1 in snippet_dict:
-        for tag in snippet_dict[item1]:
-            for item2 in snippet_dict[item1][tag]:
-                ans.append(f"{item1[3::]} {tag} {item2[3::]}")
-    return ans
 
 
 def generate_candidate_eps(

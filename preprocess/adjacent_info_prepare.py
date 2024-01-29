@@ -61,45 +61,6 @@ class AdjacentInfoPrepare:
                 temp = json.loads(line)
                 cls.global_rel_rel_adjacent_info[temp["id"]] = temp["rel_conn"]
 
-    @classmethod
-    def get_ent_rel_adjacent_info(
-        cls, ents: List[str], candi_rels: List[str]
-    ) -> Dict[str, Dict[str, List[str]]]:
-        ans = dict()
-        for ent in ents:
-            rels = set(candi_rels)
-            ans[ent] = {"fwd": [], "rev": []}
-            neighbor_rels = FreebaseODBC.query_neighbor_rels([ent])
-            fwd_rels = list(
-                set([rel for rel in neighbor_rels if not rel.endswith("_Rev")])
-                & rels
-            )
-            rev_rels = list(
-                set([rel[:-4] for rel in neighbor_rels if rel.endswith("_Rev")])
-                & rels
-            )
-            ans[ent]["fwd"] = fwd_rels
-            ans[ent]["rev"] = rev_rels
-        return ans
-
-    @classmethod
-    def get_rel_rel_adjacent_info(
-        cls, candi_rels: List[str]
-    ) -> Dict[str, Dict[str, List[str]]]:
-        # 缓存信息使用时才载入内存
-        if cls.global_rel_rel_adjacent_info == None:
-            cls.load_global_cache()
-        ans = dict()
-        candi_rels = set(candi_rels)
-        for rel in candi_rels:
-            ans[rel] = {"S-S": [], "S-O": [], "O-O": [], "O-S": []}
-            if rel not in cls.global_rel_rel_adjacent_info:
-                continue
-            for tag in ["S-S", "S-O", "O-O", "O-S"]:
-                for raw_rel in cls.global_rel_rel_adjacent_info[rel][tag]:
-                    if raw_rel in candi_rels:
-                        ans[rel][tag].append(raw_rel)
-        return ans
 
     @classmethod
     def parse_adjacent_info_from_trips(
@@ -127,8 +88,8 @@ class AdjacentInfoPrepare:
                 ent_conn_info[obj]["obj"].append(rel)
         # print(ent_conn_info)
 
-        # collect rel-rel snippets
-        rel_rel_snippets = dict()
+        # collect rel-rel aps
+        rel_rel_aps = dict()
         for ent in ent_conn_info:
             s_rels = list(ent_conn_info[ent]["subj"])
             o_rels = list(ent_conn_info[ent]["obj"])
@@ -137,75 +98,75 @@ class AdjacentInfoPrepare:
                 for j in range(i + 1, len(s_rels)):
                     rel1 = s_rels[i]
                     rel2 = s_rels[j]
-                    if rel1 not in rel_rel_snippets:
-                        rel_rel_snippets[rel1] = {
+                    if rel1 not in rel_rel_aps:
+                        rel_rel_aps[rel1] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    if rel2 not in rel_rel_snippets:
-                        rel_rel_snippets[rel2] = {
+                    if rel2 not in rel_rel_aps:
+                        rel_rel_aps[rel2] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    rel_rel_snippets[rel1]["S-S"].add(rel2)
-                    rel_rel_snippets[rel2]["S-S"].add(rel1)
+                    rel_rel_aps[rel1]["S-S"].add(rel2)
+                    rel_rel_aps[rel2]["S-S"].add(rel1)
             # Case2: O-O
             for i in range(len(o_rels)):
                 for j in range(i + 1, len(o_rels)):
                     rel1 = o_rels[i]
                     rel2 = o_rels[j]
-                    if rel1 not in rel_rel_snippets:
-                        rel_rel_snippets[rel1] = {
+                    if rel1 not in rel_rel_aps:
+                        rel_rel_aps[rel1] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    if rel2 not in rel_rel_snippets:
-                        rel_rel_snippets[rel2] = {
+                    if rel2 not in rel_rel_aps:
+                        rel_rel_aps[rel2] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    rel_rel_snippets[rel1]["O-O"].add(rel2)
-                    rel_rel_snippets[rel2]["O-O"].add(rel1)
+                    rel_rel_aps[rel1]["O-O"].add(rel2)
+                    rel_rel_aps[rel2]["O-O"].add(rel1)
             # Case3: S-O, O-S
             for i in range(len(s_rels)):
                 for j in range(len(o_rels)):
                     rel1 = s_rels[i]
                     rel2 = o_rels[j]
-                    if rel1 not in rel_rel_snippets:
-                        rel_rel_snippets[rel1] = {
+                    if rel1 not in rel_rel_aps:
+                        rel_rel_aps[rel1] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    if rel2 not in rel_rel_snippets:
-                        rel_rel_snippets[rel2] = {
+                    if rel2 not in rel_rel_aps:
+                        rel_rel_aps[rel2] = {
                             "S-S": set(),
                             "S-O": set(),
                             "O-O": set(),
                             "O-S": set(),
                         }
-                    rel_rel_snippets[rel1]["S-O"].add(rel2)
-                    rel_rel_snippets[rel2]["O-S"].add(rel1)
+                    rel_rel_aps[rel1]["S-O"].add(rel2)
+                    rel_rel_aps[rel2]["O-S"].add(rel1)
 
-        # collect ent-rel snippets
-        ent_rel_snippets = dict()
+        # collect ent-rel aps
+        ent_rel_aps = dict()
         for ent in ent_conn_info:
             if ent.startswith("?"):
                 continue
             else:
-                ent_rel_snippets[ent] = {"fwd": [], "rev": []}
+                ent_rel_aps[ent] = {"fwd": [], "rev": []}
                 for rel in ent_conn_info[ent]["subj"]:
-                    ent_rel_snippets[ent]["fwd"].append(rel)
+                    ent_rel_aps[ent]["fwd"].append(rel)
                 for rel in ent_conn_info[ent]["obj"]:
-                    ent_rel_snippets[ent]["rev"].append(rel)
+                    ent_rel_aps[ent]["rev"].append(rel)
 
-        return ent_rel_snippets, rel_rel_snippets
+        return ent_rel_aps, rel_rel_aps
