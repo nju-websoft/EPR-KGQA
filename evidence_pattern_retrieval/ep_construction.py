@@ -278,9 +278,6 @@ class EPCombiner:
             bound_idx = node_info[node]["bound_idx"]
             # 遍历检查正向候选谓词
             for rel in fwd_candi:
-                # 为了规避重复组合的情况，要求在每个变量节点添加的 rel idx 具有不递减的倾向 (初始为0)
-                # if rel_idx[rel] < bound_idx:
-                #   continue
                 candi_trip.append((node, rel, None))
                 # 考虑同时添加一个节点约束的情况
                 topic_ents = cls.__choose_candi_topic_ents(
@@ -290,8 +287,6 @@ class EPCombiner:
                     candi_trip.append((node, rel, ent))
             # 遍历检查逆向候选谓词 (同理)
             for rel in rev_candi:
-                # if rel_idx[rel] < bound_idx:
-                #   continue
                 candi_trip.append((None, rel, node))
                 topic_ents = cls.__choose_candi_topic_ents(
                     uncombined_ents, ent_rel_aps, rel, "fwd"

@@ -179,7 +179,7 @@ def filter_topk_aps(ranked_aps: List[dict], topk: int) -> List[dict]:
         topk_aps = set()
         expanded_aps = set()
         # merge reversed-equivalent aps && filter topk
-        for ap in item["candidates"]:
+        for ap in item["rr_aps"]:
             if len(topk_aps) >= topk:
                 break
             temp = ap.split(" ")
@@ -200,5 +200,5 @@ def filter_topk_aps(ranked_aps: List[dict], topk: int) -> List[dict]:
             # expand ap by tag
             new_tag = tag[2] + tag[1] + tag[0]
             expanded_aps.add(" ".join([rel2, new_tag, rel1]))
-        item["candidates"] = list(topk_aps | expanded_aps)
+        item["rr_aps"] = list(topk_aps | expanded_aps)
     return ranked_aps
