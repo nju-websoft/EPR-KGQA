@@ -60,6 +60,7 @@ class Config:
     ranked_ep_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_ranked_ep.json"
 
     # subgraph extraction
+    allow_literal = True if ds_tag == 'WebQSP' else False
     subgraph_extraction_dir = config["subgraph_extraction"]["work_dir"]
     ep_topk = config["subgraph_extraction"]["ep_topk"]
     feature = lambda: f"top{Config.ap_topk}_ap_top{Config.ep_topk}_ep"

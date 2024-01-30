@@ -2,6 +2,7 @@
 from typing import *
 
 # Self-defined Modules
+from config import Config
 from my_utils.ap_utils import parse_triplets_from_serialized_ep
 from my_utils.freebase import FreebaseODBC
 
@@ -88,8 +89,8 @@ def induce_instantiated_subg(ep_str: str) -> Tuple[List[str], List[str]]:
         for idx in range(row_cnt):
             s = subj_insts[idx]
             o = obj_insts[idx]
-            # 过滤 s 和 o 不是有效实体的情况
-            if s.startswith("ns:") and o.startswith("ns:"):
+            # 过滤 s 和 o 不是有效实体的情况 （当allow literal为True，不进行过滤）
+            if (s.startswith("ns:") and o.startswith("ns:")) or Config.allow_literal:
                 trip_strs.add(" ".join([s, rel, o]))
                 nodes.add(s)
                 nodes.add(o)
@@ -131,8 +132,8 @@ def get_retrieved_aps(topic_ents: List[str], ap_info: dict) -> Tuple[dict, dict]
     rel_rels = dict()
     # prepare ent_rel
     # 如果文件给出了 ent_rels 结果，则直接读取。否则需要临时查询
-    if "ent_rels" in ap_info:
-        for ep_str in ap_info["ent_rels"]:
+    if "er_aps" in ap_info:
+        for ep_str in ap_info["er_aps"]:
             temp = ep_str.split(" ")
             ent = temp[0]
             tag = temp[1]
@@ -155,7 +156,7 @@ def get_retrieved_aps(topic_ents: List[str], ap_info: dict) -> Tuple[dict, dict]
                 if rel not in rel_rels:
                     rel_rels[rel] = {"S-S": [], "S-O": [], "O-S": [], "O-O": []}
     # prepare rel_rel
-    for pp_str in ap_info["candidates"]:
+    for pp_str in ap_info["rr_aps"]:
         splits = pp_str.split(" ")
         rel1 = "ns:" + splits[0]
         rel2 = "ns:" + splits[2]

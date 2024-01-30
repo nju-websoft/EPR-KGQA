@@ -157,6 +157,9 @@ def reference_pipeline(
     index_buffer=50000,
     top_k=500,
 ):
+    if os.path.exists(dest_file):
+        print(f"{dest_file} already exists!")
+        return
     maxlen = max_len
     bs = 256
     bert_model = cache_dir
@@ -255,7 +258,8 @@ if __name__ == "__main__":
             os.makedirs(split_folder)
         reference_pipeline(
             split,
-            questions_path=read_json(Config.ds_split_f(split)),
+            questions_path=Config.ds_split_f(split),
+            all_rr_aps=read_json(Config.cache_rr_aps),
             model_path=model_file,
             max_len=95,  # consistent with bi-encoder training script
             cache_dir="bert-base-uncased",

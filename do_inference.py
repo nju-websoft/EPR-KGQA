@@ -223,11 +223,8 @@ def run(
     print(f"\n>>> run inference ({Config.ds_tag}.{split_tag})...")
     ds_items = load_ds_items(split_filename)
 
-    # Step1: 生成检索到的 atomic patterns 候选
-    # 【TODO】
-
     # Step2: 组合出候选 evidence patterns
-    # generate_candidate_eps_with_time_info(ds_items, split_tag, topk_range, step)
+    generate_candidate_eps_with_time_info(ds_items, split_tag, topk_range, step)
 
     # Step3: 对候选 evidence patterns 进行排序
     # 【TODO】

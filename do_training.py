@@ -9,14 +9,8 @@ if __name__ == "__main__":
     Config.ap_topk = 100
     Config.ep_topk = 3
 
-    # >>> atomic pattern retrieval td gen
-    # 【TODO】
-
-    # >>> atomic pattern retrieval training
-    # 【TODO】
-
     # >>> evidence pattern rank td gen
-    # ep_rank_td_gen()
+    ep_rank_td_gen()
 
     # >>> evidence pattern rank training
     # 【TODO】

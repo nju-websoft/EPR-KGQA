@@ -135,6 +135,8 @@ def __rr_aps_dict_to_str_list(rr_aps_dict) -> List[str]:
 
 
 def analyze():
+    if Config.ds_tag == 'WebQSP':
+        return # in load ds items, only CWQ has valid logic form.
     cached_paths = read_jsonl_by_key(Config.cache_path)
     """ Step1: 通过验证集研究正例的结构导出率"""
     dev_items = load_ds_items(Config.ds_dev)

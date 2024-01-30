@@ -53,7 +53,7 @@ def load_ds_items(
 ) -> List[DataItem]:
     results = []
     if Config.ds_tag == "CWQ":
-        items = json.load(open(filepath))
+        items = read_json(filepath)
         sr_info = read_jsonl_by_key(sr_info_file)
         for item in items:
             id = item["ID"]
@@ -64,13 +64,13 @@ def load_ds_items(
                     topic_ents.append("ns:" + info["kb_id"][:-2])
                 else:
                     topic_ents.append("ns:" + info["kb_id"])
-            answers = [
-                "ns:" + answer["answer_id"]
-                if answer["answer_id"].startswith("m.")
-                or answer["answer_id"].startswith("g.")
-                else answer["answer_id"]
-                for answer in item["answers"]
-            ]
+            answers = []
+            for info in sr_info[id]["answers"]:
+                if info["kb_id"].startswith('m.') or info["kb_id"].startswith('g.'):
+                    answers.append('ns:' + info['kb_id'])
+                else:
+                    answers.append(info['kb_id'])
+            answers = list(set(answers))
             lf = item["sparql"]
             comp_type = item["compositionality_type"]
             results.append(DataItem(id, question, topic_ents, answers, lf, comp_type))
@@ -80,7 +80,13 @@ def load_ds_items(
             item = items[id]
             question = item["question"]
             topic_ents = ["ns:" + mid for mid in item["entities"]]
-            answers = list(set(["ns:" + info["kb_id"] for info in item["answers"]]))
+            answers = []
+            for info in item["answers"]:
+                if info["kb_id"].startswith('m.') or info["kb_id"].startswith('g.'):
+                    answers.append('ns:' + info['kb_id'])
+                else:
+                    answers.append(info['kb_id'])
+            answers = list(set(answers))            
             lf = None
             comp_type = None
             results.append(DataItem(id, question, topic_ents, answers, lf, comp_type))
