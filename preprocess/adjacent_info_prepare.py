@@ -40,7 +40,7 @@ class AdjacentInfoPrepare:
         def mp_query_rel_conn(filepath, pid, queue):
             while True:
                 rel = queue.get()
-                if rel == None:
+                if rel is None:
                     break
                 info = FreebaseODBC.query_rel_conn(rel)
                 res = {"id": rel, "rel_conn": info}

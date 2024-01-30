@@ -1,6 +1,6 @@
 # 训练数据生成和训练过程启动都放在这个文件中
-from evidence_pattern_retrieval.ep_rank_td_gen import run as ep_rank_td_gen, Config
-from evidence_pattern_retrieval.ans_ranker_td_gen import run as ans_rank_td_gen
+from config import Config
+from subgraph_extraction.ans_ranker_td_gen import run as ans_rank_td_gen
 
 if __name__ == "__main__":
     # 训练数据生成阶段，统一设置 ap_topK=100, ep_topk=3
@@ -8,9 +8,6 @@ if __name__ == "__main__":
     raw_ep_topk = Config.ep_topk
     Config.ap_topk = 100
     Config.ep_topk = 3
-
-    # >>> evidence pattern rank td gen
-    ep_rank_td_gen()
 
     # >>> evidence pattern rank training
     # 【TODO】

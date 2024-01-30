@@ -141,7 +141,7 @@ class FreebaseODBC:
                 cursor.execute(infoQ(prop))
             row = cursor.fetchone()
             # 丢掉啥信息都没有的谓词
-            if row == None:
+            if row is None:
                 continue
             prop_info_dict[prop] = {
                 "domain": cls.__shorten(row.domain),

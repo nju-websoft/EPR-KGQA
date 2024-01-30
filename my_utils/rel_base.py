@@ -22,9 +22,9 @@ def update_base(relFile: str, typeFile: str):
     for prop in rel_info_dict:
         item = rel_info_dict[prop]
         rev = item["reverse"]
-        if rev == None:
+        if rev is None:
             continue
-        if rev in rel_info_dict and rel_info_dict[rev]["reverse"] == None:
+        if rev in rel_info_dict and rel_info_dict[rev]["reverse"] is None:
             rel_info_dict[rev]["reverse"] = prop
             count += 1
     print(f"Add {count} missing reverse properties!")
@@ -102,7 +102,7 @@ class relBase:
                 return rel
             else:
                 rev = cls.get_reverse(rel)
-                if rev == None:
+                if rev is None:
                     return None
                 else:
                     return rev + "_Rev"
@@ -126,7 +126,7 @@ class relBase:
         else:
             rel1 = cls.get_same_form(rel1)
             rel2 = cls.get_same_form(rel2)
-            if rel1 == None or rel2 == None:
+            if rel1 is None or rel2 is None:
                 return False
             if cls.get_reverse(rel1) == rel2:
                 return True
@@ -163,7 +163,7 @@ class relBase:
 
     @classmethod
     def is_cvt_type(cls, tp: str) -> bool:
-        if tp == None:
+        if tp is None:
             return False
         if cls.type_info_dict[tp]["instance_count"] == 0:
             return False

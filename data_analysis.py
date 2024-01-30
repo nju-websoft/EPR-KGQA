@@ -4,7 +4,7 @@ import json
 def analynaze_generated_eps():
     dev_ep_list = []
     with open(
-        "/home/jjyu/IRQA/data/CWQ/ep_generation/dev_top200_ap_ep_rank_td.jsonl", "r"
+        "/home/jjyu/IRQA/data/CWQ/ep_retrieval/dev_top200_ap_ep_rank_td.jsonl", "r"
     ) as f:
         for line in f:
             dev_ep_list.append(json.loads(line))

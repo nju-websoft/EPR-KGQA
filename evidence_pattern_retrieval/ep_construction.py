@@ -27,7 +27,7 @@ class Combination:
     ):
         new_trip = [subj, rel, obj]
         # 处理 subject
-        if subj == None:
+        if subj is None:
             assert obj != None
             var_name = self.var_names.pop()
             new_trip[0] = var_name
@@ -63,7 +63,7 @@ class Combination:
                 "bound_idx": 0,
             }
         # 处理 object
-        if obj == None:
+        if obj is None:
             assert subj != None
             var_name = self.var_names.pop()
             new_trip[2] = var_name

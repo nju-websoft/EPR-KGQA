@@ -264,8 +264,7 @@ if __name__ == "__main__":
             max_len=95,  # consistent with bi-encoder training script
             cache_dir="bert-base-uncased",
             dest_file=os.path.join(
-                split_folder,
-                f"{Config.ds_tag}_{split}_top_{topk}_rr_aps_with_er_aps.json",
+                Config.retrieved_ap_f(split),
             ),
             index_file=os.path.join(inference_dir, "flat.index"),
         )

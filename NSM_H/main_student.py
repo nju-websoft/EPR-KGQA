@@ -102,7 +102,7 @@ args.use_cuda = torch.cuda.is_available()
 
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
-if args.experiment_name == None:
+if args.experiment_name is None:
     timestamp = str(int(time.time()))
     args.experiment_name = "{}-{}-{}".format(
         args.dataset,

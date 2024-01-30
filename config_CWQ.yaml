@@ -30,9 +30,9 @@ ap_retrieval:
   # rel-rel aps topk
   ap_topk: 100
 
-ep_generation:
+ep_retrieval:
   # working directory
-  work_dir: "data/CWQ/ep_generation/"
+  work_dir: "data/CWQ/ep_retrieval/"
   # max combine count
   max_combine_rels: 5
 

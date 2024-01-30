@@ -1,6 +1,7 @@
 # Stardard Libraries
 import json
 import os
+import time
 
 # Third party libraries
 from tqdm import tqdm
@@ -11,7 +12,7 @@ from evidence_pattern_retrieval.ep_construction import EPCombiner, Combination
 from my_utils.ap_utils import *
 from my_utils.data_item import load_ds_items, DataItem
 from my_utils.ep_utils import *
-from my_utils.io_utils import read_json, append_jsonl, run_multiprocess
+from my_utils.io_utils import read_json, write_json, append_jsonl, run_multiprocess
 from my_utils.logger import Logger
 
 
@@ -23,7 +24,7 @@ def get_quality_score(comb: Combination, gold_ans: List[str]) -> float:
     insts = set()
     quality = 0
     # no terminal var
-    if comb.terminal_var == None:
+    if comb.terminal_var is None:
         for var in var_insts_map:
             insts |= set(var_insts_map[var])
         ans_cover_cnt = len(set(gold_ans) & set(insts))
@@ -77,26 +78,20 @@ def td_gen_by_ans_coverage(
         else:
             negatives.append(comb_str)
     assert len(positives) == len(comb_strs_with_max_quality)
-    ans = {"id": qid, "question": text, "positive": positives, "negative": negatives}
+    ans = {"id": qid, "question": text, "positive_eps": positives, "negative_eps": negatives}
     return ans
-
-
-finished_td_gen = 0
 
 
 def mp_td_gen_by_ans_coverage(target_file, pid, queue):
     while True:
         info = queue.get()
-        if info == None:
+        if info is None:
             break
         ds_item = info["item"]
-        ent_rels = info["ep_ap"]
-        rel_rels = info["pp_ap"]
+        ent_rels = info["er_aps"]
+        rel_rels = info["rr_aps"]
         td_info = td_gen_by_ans_coverage(ds_item, ent_rels, rel_rels)
         append_jsonl(td_info, target_file)
-        global finished_td_gen
-        finished_td_gen += 1
-        print("finished td gen:", finished_td_gen)
         logger.debug(f"[mp_td_gen_by_ans_coverage] pid:{pid}, qid:{ds_item.id}")
 
 
@@ -125,43 +120,78 @@ def collect_train_data(split_tag: str, ap_topk: int, use_multi_process: bool):
     for item, ap_info in zip(items, retrieved_aps):
         assert item.id == ap_info["id"]
         if item.id not in processed_ids:
-            ep_aps, pp_aps = get_retrieved_aps(item.topic_ents, ap_info)
-            items_to_deal.append({"item": item, "ep_ap": ep_aps, "pp_ap": pp_aps})
+            er_aps, rr_aps = get_retrieved_aps(item.topic_ents, ap_info)
+            items_to_deal.append({"item": item, "er_aps": er_aps, "rr_aps": rr_aps})
     print(f"Generate training data, use_multi_process: {use_multi_process}")
     if use_multi_process:
         run_multiprocess(
             mp_td_gen_by_ans_coverage, [td_f], items_to_deal, Config.worker_num
         )
     else:
-        ### [To Del] for temp analysis
-        count = 0
-        pos_count = 0
-        neg_count = 0
-        fail_count = 0
-        ### [To Del]
         for info in tqdm(items_to_deal):
-            td_info = td_gen_by_ans_coverage(info["item"], info["ep_ap"], info["pp_ap"])
+            td_info = td_gen_by_ans_coverage(info["item"], info["er_aps"], info["rr_aps"])
             append_jsonl(td_info, td_f)
             logger.debug(f"[td_gen_by_ans_coverage] qid:{info['item'].id}")
-            ### [To Del] for temp analysis
-            count += 1
-            pos_count += len(td_info["positive"])
-            neg_count += len(td_info["negative"])
-            if len(td_info["positive"]) == 0:
-                fail_count += 1
-            if count == 100:
-                print(
-                    f"#item:{count}, #pos:{pos_count}, #neg:{neg_count}, #fail:{fail_count}"
-                )
-                break
-            ### [To Del]
     logger.info(f"{split_tag} ep ranking training data generation done.")
 
 
-def run():
-    collect_train_data("dev", Config.ap_topk, True)
-    collect_train_data("train", Config.ap_topk, True)
+def generate_candidate_eps(
+    data_items: List[DataItem], ranked_ap_info: List[dict], ap_topk: int
+) -> List[dict]:
+    print(f"[Generate Candidate EPs] {len(data_items)} items total, ap_topk: {ap_topk}")
+    ans = []
+    retrieved_aps = filter_topk_aps(ranked_ap_info, ap_topk)
+    assert len(data_items) == len(retrieved_aps)
+    for item, ap_info in tqdm(zip(data_items, retrieved_aps)):
+        assert item.id == ap_info["id"]
+        er_aps, rr_aps = get_retrieved_aps(item.topic_ents, ap_info)
+        if len(er_aps) == 0:
+            combs = []
+        else:
+            combs = EPCombiner.combine(er_aps, rr_aps, False)
+        ans.append(
+            {
+                "id": item.id,
+                "question": item.question,
+                "candidate_eps": [comb.get_query_trips() for comb in combs],
+            }
+        )
+    return ans
+
+
+def generate_candidate_eps_with_time_info(
+    items: List[DataItem], split_tag: str, topk_range, step: int = 20
+):
+    topk_time_info = dict()
+    topk_time_wo_io = dict()
+    raw_topk = Config.ap_topk
+    topks = range(topk_range[0], topk_range[1] + 1, step)
+    ranked_ap_info = read_json(Config.retrieved_ap_f(split_tag))
+    for topk in topks:
+        Config.ap_topk = topk
+        start = time.time()
+        start_wo_io = time.time()
+        candi_eps = generate_candidate_eps(items, ranked_ap_info, Config.ap_topk)
+        end_wo_io = time.time()
+        write_json(candi_eps, Config.candi_ep_f(split_tag))
+        end = time.time()
+        topk_time_info[f"top{topk}"] = round(end - start, 1)
+        topk_time_wo_io[f"top{topk}"] = round(end_wo_io - start_wo_io, 1)
+    Config.ap_topk = raw_topk
+    # print(f"Time Costs:{topk_time_info}")
+    print(f"Time Costs (w/o IO):{topk_time_wo_io}")
 
 
 if __name__ == "__main__":
+    if not os.path.exists(Config.ep_retrieval_dir):
+        os.makedirs(Config.ep_retrieval_dir)
+    Config.ap_topk = 100
+    collect_train_data("dev", Config.ap_topk, True)
     collect_train_data("train", Config.ap_topk, True)
+    Config.ap_topk = 100
+    topk_range = [80, 100]
+    step = 20
+    generate_candidate_eps_with_time_info(load_ds_items(Config.ds_test), 'test', topk_range, step)
+    topk_range = [100, 100]
+    generate_candidate_eps_with_time_info(load_ds_items(Config.ds_dev), 'dev', topk_range, step)
+    generate_candidate_eps_with_time_info(load_ds_items(Config.ds_train), 'train', topk_range, step)

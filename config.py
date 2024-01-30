@@ -49,15 +49,14 @@ class Config:
     # ap retrieval
     ap_retrieval_dir = config["ap_retrieval"]["work_dir"]
     ap_topk = config["ap_retrieval"]["ap_topk"]
-    ap_retrieval_td_f = lambda split: f"{Config.ap_retrieval_dir}{split}_ap_retrieve_td.json"
-    retrieved_ap_f = lambda split: f"{Config.ap_retrieval_dir}{split}_ranked_ap.json"
+    retrieved_ap_f = lambda split: f"{Config.ap_retrieval_dir}{split}_retrieved_ap.json"
 
     # ep generation
-    ep_generation_dir = config["ep_generation"]["work_dir"]
-    max_combine_rels = config["ep_generation"]["max_combine_rels"]
-    ep_rank_td_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_ep_rank_td.jsonl"
-    candi_ep_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_candi_ep.json"
-    ranked_ep_f = lambda split: f"{Config.ep_generation_dir}{split}_top{Config.ap_topk}_ap_ranked_ep.json"
+    ep_retrieval_dir = config["ep_retrieval"]["work_dir"]
+    max_combine_rels = config["ep_retrieval"]["max_combine_rels"]
+    ep_rank_td_f = lambda split: f"{Config.ep_retrieval_dir}{split}_top{Config.ap_topk}_ap_ep_rank_td.jsonl"
+    candi_ep_f = lambda split: f"{Config.ep_retrieval_dir}{split}_top{Config.ap_topk}_ap_candi_ep.json"
+    ranked_ep_f = lambda split: f"{Config.ep_retrieval_dir}{split}_top{Config.ap_topk}_ap_ranked_ep.json"
 
     # subgraph extraction
     allow_literal = True if ds_tag == 'WebQSP' else False
