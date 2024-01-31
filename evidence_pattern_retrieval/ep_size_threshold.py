@@ -1,7 +1,7 @@
 # Self-defined Modules
 from config import Config
 from my_utils.io_utils import read_jsonl_by_key
-from my_utils.data_item import DataItem, load_ds_items
+from my_utils.data_item import load_ds_items
 
 
 def get_fact_cnt_4_path(path):
@@ -42,3 +42,6 @@ for item in train_items:
         paths_fact_cnt[fact_cnt] = 0
     paths_fact_cnt[fact_cnt] += 1
 print(paths_fact_cnt)
+# CWQ {2: 11287, 3: 7433, 4: 2708, 0: 1473, 5: 947, 1: 3165, 6: 562, 7: 48, 8: 8}
+# WebQSP {2: 865, 1: 1835, 4: 30, 0: 88, 6: 5, 3: 3}
+# the thresholds for CWQ and WebQSP are set to 5 and 3 respectively.

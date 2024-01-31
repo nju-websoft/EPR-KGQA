@@ -144,8 +144,7 @@ def build_index(output_path, rr_ap_vectors_path, index_buffer=50000):
     index.serialize(output_path)
 
 
-def reference_pipeline(
-    split,
+def inference_pipeline(
     questions_path,
     all_rr_aps,
     model_path,
@@ -227,7 +226,7 @@ def reference_pipeline(
 
 
 if __name__ == "__main__":
-    topk = 100
+    topk = 500
     epoch = 5
     inference_dir = os.path.join(
         f"data/{Config.ds_tag}/ap_retrieval/model", f"{Config.ds_tag}_ep_{epoch}"
@@ -253,11 +252,7 @@ if __name__ == "__main__":
     )
     for split in ["dev", "test", "train"]:
         start = time.time()
-        split_folder = os.path.join(inference_dir, f"{epoch_folder}_{split}")
-        if not os.path.exists(split_folder):
-            os.makedirs(split_folder)
-        reference_pipeline(
-            split,
+        inference_pipeline(
             questions_path=Config.ds_split_f(split),
             all_rr_aps=read_json(Config.cache_rr_aps),
             model_path=model_file,
@@ -267,6 +262,7 @@ if __name__ == "__main__":
                 Config.retrieved_ap_f(split),
             ),
             index_file=os.path.join(inference_dir, "flat.index"),
+            top_k=topk
         )
         end = time.time()
         print(end - start)

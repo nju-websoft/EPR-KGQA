@@ -35,6 +35,7 @@ ep_retrieval:
   work_dir: "data/CWQ/ep_retrieval/"
   # max combine count
   max_combine_rels: 5
+  sample_size: 64
 
 subgraph_extraction:
   work_dir: "data/CWQ/subgraph_extraction/"

@@ -55,7 +55,8 @@ class Config:
     ep_retrieval_dir = config["ep_retrieval"]["work_dir"]
     max_combine_rels = config["ep_retrieval"]["max_combine_rels"]
     ep_rank_td_f = lambda split: f"{Config.ep_retrieval_dir}{Config.ds_tag}_{split}_top{Config.ap_topk}_ap_ep_rank_td.jsonl"
-    candi_ep_f = lambda split: f"{Config.ep_retrieval_dir}{Config.ds_tag}_{split}_top{Config.ap_topk}_ap_candi_ep.json"
+    ep_rank_sample_size = config["ep_retrieval"]["sample_size"]
+    candi_ep_f = lambda split: f"{Config.ep_retrieval_dir}{Config.ds_tag}_{split}_top{Config.ap_topk}_ap_candi_eps.json"
     ranked_ep_f = lambda split: f"{Config.ep_retrieval_dir}{Config.ds_tag}_{split}_top{Config.ap_topk}_ap_ranked_ep.json"
 
     # subgraph extraction
