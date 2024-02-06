@@ -17,4 +17,4 @@ echo "model doesn't exist!"
 exit
 fi
 
-CUDA_VISIBLE_DEVICES=2 python evidence_pattern_retrieval/ep_ranking.py --dataset ${ds_tag} --model_type bert --model_name_or_path ${model_dir} --do_lower_case --do_predict --predict_file ${predict_file} --overwrite_output_dir --max_seq_length 256 --output_dir data/${ds_tag}/ep_retrieval/ --per_gpu_eval_batch_size 16 --sample_size ${sample_size} --topk ${topk}
+python evidence_pattern_retrieval/ep_ranking.py --dataset ${ds_tag} --model_type bert --model_name_or_path ${model_dir} --do_lower_case --do_predict --predict_file ${predict_file} --overwrite_output_dir --max_seq_length 256 --output_dir data/${ds_tag}/ep_retrieval/ --per_gpu_eval_batch_size 16 --sample_size ${sample_size} --topk ${topk}

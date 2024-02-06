@@ -166,10 +166,10 @@ def generate_candidate_eps_with_time_info(
     topk_time_wo_io = dict()
     raw_topk = Config.ap_topk
     topks = range(topk_range[0], topk_range[1] + 1, step)
-    ranked_ap_info = read_json(Config.retrieved_ap_f(split_tag))
     for topk in topks:
         Config.ap_topk = topk
         start = time.time()
+        ranked_ap_info = read_json(Config.retrieved_ap_f(split_tag))
         start_wo_io = time.time()
         candi_eps = generate_candidate_eps(items, ranked_ap_info, Config.ap_topk)
         end_wo_io = time.time()
