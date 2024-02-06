@@ -1,6 +1,8 @@
 # EPR for WWW2024
 Research Project for Evidence Pattern Retrieval for the Web Conference 2024
 
+[paper (preprint on arXiv)](https://arxiv.org/abs/2402.02175)
+
 ## 项目结构：
   - my_utils
     - freebase.py
