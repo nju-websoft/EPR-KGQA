@@ -90,7 +90,7 @@ The best results of IR methods are in **bold**, and the second-best results are 
 
 ## Citation
 ```
-@inproceedings{epr-kgqa
+@inproceedings{epr-kgqa,
   author = {Ding, Wentao and Li, Jinmao and Luo, Liangchuan and Qu, Yuzhong},
   title = {Enhancing Complex Question Answering over Knowledge Graphs through Evidence Pattern Retrieval},
   year = {2024},
