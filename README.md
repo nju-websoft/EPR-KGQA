@@ -24,7 +24,7 @@ Project for the WWW'24 paper: *Enhancing Complex Question Answering over Knowled
 
 | ![image](https://github.com/nju-websoft/EPR-KGQA/assets/10251079/872de89d-409a-42cd-b1f9-f18d7ce191d6) |
 | --- |
-| Facts about the question *“What country, containing Stahuis, does Germany border?”*. The correct answer `Netherlands` is underlined. The noisy answer `Austria` does not contain `Stahuis`, but the names of relations connecting them express similar meanings. Systems insensitive to structural dependencies may be confused by the noises. |
+| Facts about the question *“What country, containing Stahuis, does Germany border?”*. The correct answer `Netherlands` is <ins>underlined</ins>. The noisy answer `Austria` does not contain `Stahuis`, but the names of relations connecting them express similar meanings. Systems insensitive to structural dependencies may be confused by the noises. |
 
 ### Evidence pattern retrieval (EPR)
 
@@ -40,7 +40,7 @@ Project for the WWW'24 paper: *Enhancing Complex Question Answering over Knowled
 
 <img src="https://github.com/nju-websoft/EPR-KGQA/assets/10251079/89e05edf-3dc7-449d-bad9-d7c34908e9a1" alt="image" width="50%" height="auto">
 
-The best results of IR methods are in **bold**, and the second-best results are underlined. **†** denotes that the method requires gold query annotation of all training questions. **∗** denotes few-shot methods.
+The best results of IR methods are in **bold**, and the second-best results are <ins>underlined</ins>. **†** denotes that the method requires gold query annotation of all training questions. **∗** denotes few-shot methods.
 
 
 ## Project Organization
