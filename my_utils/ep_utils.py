@@ -91,6 +91,8 @@ def induce_instantiated_subg(ep_str: str) -> Tuple[List[str], List[str]]:
             o = obj_insts[idx]
             # 过滤 s 和 o 不是有效实体的情况 （当allow literal为True，不进行过滤）
             if (s.startswith("ns:") and o.startswith("ns:")) or Config.allow_literal:
+                if '\n' in s or '\n' in o:
+                    continue
                 trip_strs.add(" ".join([s, rel, o]))
                 nodes.add(s)
                 nodes.add(o)

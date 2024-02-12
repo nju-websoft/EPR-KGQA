@@ -19,7 +19,7 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm, trange
-from transformers import AdamW, get_linear_schedule_with_warmup
+from transformers import AdamW, AutoTokenizer, get_linear_schedule_with_warmup, WEIGHTS_NAME
 
 try:
     from torch.utils.tensorboard import SummaryWriter
