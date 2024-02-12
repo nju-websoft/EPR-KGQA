@@ -66,3 +66,9 @@ class Config:
     feature = lambda: f"top{Config.ap_topk}_ap_top{Config.ep_topk}_ep"
     ans_rank_td_f = lambda split: f"{Config.subgraph_extraction_dir}{Config.ds_tag}_{split}_{Config.feature()}_ans_rank_td.json"
     induced_subg_f = lambda split: f"{Config.subgraph_extraction_dir}{Config.ds_tag}_{split}_{Config.feature()}_instantiated_subg.json"
+
+    # NSM dir
+    nsm_dir = config["NSM_reasoning"]["work_dir"]
+    nsm_entities = f"{nsm_dir}entities.txt"
+    nsm_relations = f"{nsm_dir}relations.txt"
+    nsm_input_f = lambda split: f"{Config.nsm_dir}{split}_simple.json"

@@ -10,5 +10,4 @@ bert-base-uncased/
 NSM_H/datasets
 NSM_H/checkpoint
 log/
-test.ipynb
 runs/

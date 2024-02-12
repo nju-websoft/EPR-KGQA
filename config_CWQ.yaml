@@ -1,4 +1,3 @@
-
 dataset: 
   tag: "CWQ"
   train: "data/dataset/CWQ/ComplexWebQuestions_train.json"
@@ -40,3 +39,6 @@ ep_retrieval:
 subgraph_extraction:
   work_dir: "data/CWQ/subgraph_extraction/"
   ep_topk: 1
+
+NSM_reasoning:
+  work_dir: "NSM_H/datasets/CWQ_EPR/"
