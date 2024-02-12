@@ -10,7 +10,8 @@ Project for the WWW'24 paper: *Enhancing Complex Question Answering over Knowled
 - [Overview](#overview)
   - [Evidence pattern retrieval (EPR)](#evidence-pattern-retrieval-epr)
   - [Experimental Results](#experimental-results)
-- TODO
+- [Project Organization](#project-organization)
+- [Reproducing the Results](#reproducing-the-results)
 - [Citation](#citation)
 - [Acknowledgements](#acknowledgements)
 
@@ -44,9 +45,38 @@ The best results of IR methods are in **bold**, and the second-best results are 
 
 
 ## Project Organization
-  //TODO
-  
+  - config.py
+  - config_CWQ.yaml
+  - config_WebQSP.yaml
+  - preprocess
+    - adjacent_info_prepare.py
+    - heuristic_path_search.py
+    - do_preprocess.py
+  - atomic_pattern_retrieval
+    - generate_positive_rr_aps_by_cached_paths.py
+    - generate_training_data_for_ap_retrieval.py
+    - train_biencoder.sh
+    - biencoder
+      - biencoder.py
+      - run_biencoder.py
+      - faiss_indexer.py
+      - biencoder_inference.py
+  - evidence_pattern_retrieval
+    - ep_size_threshold.py
+    - ep_construction.py
+    - generate_candidate_eps.py
+    - generate_ep_ranking_data.py
+    - train_ep_ranking.sh
+    - predict_ep_ranking.sh
+    - BERT_Ranker
+      - model_config.py
+      - BertRanker.py
+      - train_bert_ranker.py
+  - subgraph_extraction
+    - subgraph_extraction.py
+    - convert_to_nsm_input.py
   - my_utils
+    - fact.py
     - freebase.py
     - data_item.py
     - io_utils.py
@@ -54,39 +84,145 @@ The best results of IR methods are in **bold**, and the second-best results are 
     - rel_base.py
     - ap_utils.py
     - ep_utils.py
-  - preprocess
-    - heuristic_path_search.py
-    - adjacent_info_prepare.py
-  - evidence_pattern_retrieval
-    - models
-      - ???
-      - ???
-    - ap_retrieval_td_gen.py
-    - ep_rank_td_gen.py
-    - ep_construction.py
   - data
-    - APs_fb
-    - WebQSP
-      - dataset
-      - ap_retrieval
-      - ep_construction
-      - ep_ranking
-      - NSM_ours
+    - dataset
+      - CWQ
+        - ComplexWebQuestions_train.json
+        - ComplexWebQuestions_dev.json
+        - ComplexWebQuestions_test.json
+        - CWQ_full_with_int_id.jsonl
+      - WebQSP
+        - train_simple.jsonl
+        - dev_simple.jsonl
+        - test_simple.jsonl
+        - WebQSP.train.json
+        - WebQSP.test.json
+    - cache
+      - relation_info_fb.json
+      - type_info_fb.json
+      - rel_conn_fb.jsonl
+      - rr_aps_fb.json
+      - rr_aps_forward_reverse_dict.json
+      - rr_aps_tag_dict.json
+      - CWQ
+        - cached_paths.jsonl
+      - WebQSP 
+        - cached_paths.jsonl
     - CWQ
-      - dataset
       - ap_retrieval
-      - ep_construction
-      - ep_ranking
-      - NSM_ours
-  - NSM
-  - config.py
-  - config_CWQ.yaml
-  - config_WebQSP.yaml
-  - do_preprocess.py
-  - do_training.py
-  - do_inference.py
-  - run_nsm.ipynb
-  - analyze_result.ipynb
+      - ep_retrieval
+      - subgraph_extraction
+    - WebQSP
+      - ap_retrieval
+      - ep_retrieval
+      - subgraph_extraction
+  - NSM_H
+
+
+## Reproducing the Results
+
+### Preprocessing
+
+#### CWQ
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python preprocess/do_preprocess.py
+```
+#### WebQSP
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python preprocess/do_preprocess.py --config config_WebQSP.yaml
+```
+
+### Atomic Pattern Retrieval
+#### CWQ
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python atomic_pattern_retrieval/generate_positive_rr_aps_by_cached_paths.py
+python atomic_pattern_retrieval/generate_training_data_for_ap_retrieval.py
+chmod +x atomic_pattern_retrieval/train_biencoder.sh
+sh -x atomic_pattern_retrieval/train_biencoder.sh CWQ # for CWQ, about 5 hours per epoch, which costs about 1 day in total.
+python atomic_pattern_retrieval/biencoder/biencoder_inference.py
+```
+#### WebQSP
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python atomic_pattern_retrieval/generate_positive_rr_aps_by_cached_paths.py --config config_WebQSP.yaml
+python atomic_pattern_retrieval/generate_training_data_for_ap_retrieval.py --config config_WebQSP.yaml
+chmod +x atomic_pattern_retrieval/train_biencoder.sh 
+sh -x atomic_pattern_retrieval/train_biencoder.sh WebQSP
+python atomic_pattern_retrieval/biencoder/biencoder_inference.py --config config_WebQSP.yaml
+```
+### Evidence Pattern Retrieval
+#### CWQ
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python evidence_pattern_retrieval/generate_candidate_eps.py # ep construction
+python evidence_pattern_retrieval/generate_ep_ranking_data.py
+chmod +x evidence_pattern_retrieval/train_ep_ranking.sh
+sh -x evidence_pattern_retrieval/train_ep_ranking.sh CWQ # about 2 days
+chmod +x evidence_pattern_retrieval/predict_ep_ranking.sh
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ test 7 100 # ds_tag, split, epoch, topk 
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ dev 7 100 # ds_tag, split, epoch, topk 
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ train 7 100 # ds_tag, split, epoch, topk
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ test 7 80# ds_tag, split, epoch, topk 
+```
+#### WebQSP
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python evidence_pattern_retrieval/generate_candidate_eps.py --config config_WebQSP.yaml
+python evidence_pattern_retrieval/generate_ep_ranking_data.py --config config_WebQSP.yaml
+chmod +x evidence_pattern_retrieval/train_ep_ranking.sh 
+sh -x evidence_pattern_retrieval/train_ep_ranking.sh WebQSP # about 2 hours
+chmod +x evidence_pattern_retrieval/predict_ep_ranking.sh
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh WebQSP test 6 100 # ds_tag, split, epoch, topk 
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh WebQSP dev 6 100 # ds_tag, split, epoch, topk 
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh WebQSP train 6 100 # ds_tag, split, epoch, topk
+CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh WebQSP test 6 80 # ds_tag, split, epoch, topk 
+```
+### Subgraph Extraction
+#### CWQ
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python subgraph_extraction/subgraph_extraction.py
+python subgraph_extraction/convert_to_nsm_input.py
+```
+#### WebQSP
+```
+cd EPR_KGQA
+export PYTHONPATH=.
+python subgraph_extraction/subgraph_extraction.py --config config_WebQSP.yaml
+python subgraph_extraction/convert_to_nsm_input.py --config config_WebQSP.yaml
+```
+
+### NSM Reasoning
+#### CWQ
+
+```
+cd NSM_H
+export PYTHONPATH=.
+chmod +x ../answer_reasoning/train_nsm.sh
+sh -x ../answer_reasoning/train_nsm.sh CWQ
+chmod +x ../answer_reasoning/predict_nsm.sh
+sh -x ../answer_reasoning/predict_nsm.sh CWQ
+```
+#### WebQSP
+
+```
+cd NSM_H
+export PYTHONPATH=.
+chmod +x ../answer_reasoning/train_nsm.sh
+sh -x ../answer_reasoning/train_nsm.sh WebQSP
+chmod +x ../answer_reasoning/predict_nsm.sh
+sh -x ../answer_reasoning/predict_nsm.sh WebQSP
+```
 
 ## Citation
 ```
