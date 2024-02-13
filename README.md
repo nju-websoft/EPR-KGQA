@@ -202,6 +202,8 @@ sh -x atomic_pattern_retrieval/train_biencoder.sh WebQSP
 ```
 For biencoder inference, run the following command:
 ```
+cd EPR_KGQA
+export PYTHONPATH=.
 python atomic_pattern_retrieval/biencoder/biencoder_inference.py --config config_WebQSP.yaml
 ```
 ### Evidence Pattern Retrieval
