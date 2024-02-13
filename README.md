@@ -3,10 +3,9 @@
 
 Project for the WWW'24 paper: *Enhancing Complex Question Answering over Knowledge Graphs through Evidence Pattern Retrieval*
 
-[![image](https://img.shields.io/badge/Paper-preprint_on_arXiv-blue.svg)](https://arxiv.org/abs/2402.02175)
+[![image](https://img.shields.io/badge/Paper-preprint_on_arXiv-yellow.svg)](https://arxiv.org/abs/2402.02175)
 [![image](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/nju-websoft/EPR-KGQA/tree/master?tab=Apache-2.0-1-ov-file)
-
-DOI: [10.5281/zenodo.10654377](https://zenodo.org/records/10654377)
+[![image](https://zenodo.org/badge/DOI/10.5281/zenodo.10654377.svg)](https://doi.org/10.5281/zenodo.10654377)
 
 ## Table of Contents
 - [Overview](#overview)
