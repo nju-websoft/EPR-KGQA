@@ -11,5 +11,8 @@ ptvsd==4.3.2
 PyYAML==6.0.1
 scikit_learn==0.24.1
 SPARQLWrapper==2.0.0
-tensorboardX==2.1
+tensorboardX==1.8
 transformers==4.18.0
+networkx==2.5
+torchvision==0.10.0
+dill==0.3.3
