@@ -121,7 +121,33 @@ The best results of IR methods are in **bold**, and the second-best results are 
 
 ## Reproducing the Results
 
+If you encounter any difficulties in reproducing the code, please feel free to reach out to me via email (liangchuanluo@smail.nju.edu.cn), and I can provide you with the specific data you need.
+
+It should be noted that our method involves a large number of queries on the knowledge graph and training multiple models during implementation. Due to the possibility of query timeouts and slight differences in the models trained each time (due to different graphics card models, etc.), the final reproduced results may have slight differences from those in the paper.
+
+### Freebase SetUp
+Setup Freebase: Both datasets use Freebase as the knowledge graph. You may refer to [Freebase Setup](https://github.com/dki-lab/Freebase-Setup) to set up a Virtuoso triplestore service (We use the official data dump of Freebase from [here](https://developers.google.com/freebase)). After starting your virtuoso service, please modify odbc and sparqlwrapper in file `my_utils/freebase.py` (for large query by odbc) and `evidence_pattern_retrieval/generate_ep_ranking_data.py` (for small query in sparqlwrapper) respectively.
+
+### Conda Environment
+We have exported the required dependencies for the project to requirements. txt, Therefore, you only need to follow these steps to create the environment required for this project.
+
+First, use Conda to create virtual environment `EPR-KGQA`,
+
+```
+conda create -n EPR-KGQA python=3.7
+```
+and activate it:
+```
+conda activate EPR-KGQA
+```
+Then use pip to install the dependent packages based on `requirements.txt`.
+```
+pip install -r requirements.txt
+```
 ### Preprocessing
+In the preprocessing stage, we query the relation information(`data/cache/relation_info_fb.json`), type information(`data/cache/type_info_fb.json`), and adjacent relation information(`data/cache/rel_conn_fb.jsonl`) of the Freebase knowledge base. And for CWQ and WebQSP, query the path between topic entities and answer as supervision information(`data/cache/CWQ/cached_paths.jsonl` and `data/cache/WebQSP/cached_paths.jsonl`).
+
+You can download the above cache file from [this link](https://drive.google.com/drive/folders/1yqezWLagrlurscauG34KXFRzMQv-QJ0q), and place them in the corresponding paths. Then the following preprocessing steps can be skipped.
 
 #### CWQ
 ```
@@ -137,17 +163,25 @@ python preprocess/do_preprocess.py --config config_WebQSP.yaml
 ```
 
 ### Atomic Pattern Retrieval
+We achieve EPR through the indexing and retrieval of atomic patterns. We train a biencoder and build faiss index based on the trained model to retrieval candidate RR-APs, and query ER-APs by topic entities.
 #### CWQ
+Train Biencoder: We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1elHWluwMc2YTODHksz4Ds2aneND6gmTZ), place it to the corresponding path and then the following steps for training can be skipped.
 ```
 cd EPR_KGQA
 export PYTHONPATH=.
 python atomic_pattern_retrieval/generate_positive_rr_aps_by_cached_paths.py
 python atomic_pattern_retrieval/generate_training_data_for_ap_retrieval.py
 chmod +x atomic_pattern_retrieval/train_biencoder.sh
-sh -x atomic_pattern_retrieval/train_biencoder.sh CWQ # for CWQ, about 5 hours per epoch, which costs about 1 day in total.
+sh -x atomic_pattern_retrieval/train_biencoder.sh CWQ
+```
+For biencoder inference, run the following command:
+```
+cd EPR_KGQA
+export PYTHONPATH=.
 python atomic_pattern_retrieval/biencoder/biencoder_inference.py
 ```
 #### WebQSP
+Train Biencoder: We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1oHl6_ETZg5iuvZJr7LXGUrjJf6KoqlL-), place it to the corresponding path and then the following steps for training can be skipped.
 ```
 cd EPR_KGQA
 export PYTHONPATH=.
@@ -155,17 +189,21 @@ python atomic_pattern_retrieval/generate_positive_rr_aps_by_cached_paths.py --co
 python atomic_pattern_retrieval/generate_training_data_for_ap_retrieval.py --config config_WebQSP.yaml
 chmod +x atomic_pattern_retrieval/train_biencoder.sh 
 sh -x atomic_pattern_retrieval/train_biencoder.sh WebQSP
+```
+For biencoder inference, run the following command:
+```
 python atomic_pattern_retrieval/biencoder/biencoder_inference.py --config config_WebQSP.yaml
 ```
 ### Evidence Pattern Retrieval
 #### CWQ
+For evidence pattern ranking, We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1x4wttiL7fYDy4zZj9NgiRhORksan14ye), place it to the corresponding path and then the step for training ranking model `sh -x evidence_pattern_retrieval/train_ep_ranking.sh CWQ`can be skipped.
 ```
 cd EPR_KGQA
 export PYTHONPATH=.
 python evidence_pattern_retrieval/generate_candidate_eps.py # ep construction
 python evidence_pattern_retrieval/generate_ep_ranking_data.py
 chmod +x evidence_pattern_retrieval/train_ep_ranking.sh
-sh -x evidence_pattern_retrieval/train_ep_ranking.sh CWQ # about 2 days
+sh -x evidence_pattern_retrieval/train_ep_ranking.sh CWQ
 chmod +x evidence_pattern_retrieval/predict_ep_ranking.sh
 CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ test 7 100 # ds_tag, split, epoch, topk 
 CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ dev 7 100 # ds_tag, split, epoch, topk 
@@ -173,6 +211,7 @@ CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CW
 CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ test 7 80# ds_tag, split, epoch, topk 
 ```
 #### WebQSP
+For evidence pattern ranking, We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1Xhzi1EUnlysX5n4wqnqnf9zQ_MGqlrIH), place it to the corresponding path and then the step for training ranking model `sh -x evidence_pattern_retrieval/train_ep_ranking.sh WebQSP`can be skipped.
 ```
 cd EPR_KGQA
 export PYTHONPATH=.
@@ -187,6 +226,7 @@ CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh We
 CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh WebQSP test 6 80 # ds_tag, split, epoch, topk 
 ```
 ### Subgraph Extraction
+In the subgraph extraction module, we extract subgraphs based on EP and convert them into the input format of NSM.
 #### CWQ
 ```
 cd EPR_KGQA
@@ -203,8 +243,8 @@ python subgraph_extraction/convert_to_nsm_input.py --config config_WebQSP.yaml
 ```
 
 ### NSM Reasoning
+In the answer reasoning module, we use NSM as the reasoner to obtain the final answer based on subgraphs.
 #### CWQ
-
 ```
 cd NSM_H
 export PYTHONPATH=.

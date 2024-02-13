@@ -19,7 +19,7 @@ from my_utils.data_item import load_ds_items
 from my_utils.io_utils import read_json, write_json
 
 
-sparql_wrapper = SPARQLWrapper('http://210.28.134.34:8890/sparql')
+sparql_wrapper = SPARQLWrapper('http://127.0.0.1:1111/sparql')
 sparql_wrapper.setReturnFormat(JSON)
 
 

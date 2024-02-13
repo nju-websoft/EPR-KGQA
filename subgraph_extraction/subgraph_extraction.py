@@ -3,7 +3,6 @@ import time
 from typing import List
 
 # Third party libraries
-from tqdm import tqdm
 from tqdm.contrib import tzip
 
 # Self-defined Modules

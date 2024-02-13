@@ -1,0 +1,15 @@
+pandas==1.3.2
+nltk==3.6.2
+numpy==1.19.2
+tqdm==4.62.1
+pyodbc==4.0.0_unsupported
+torch==1.9.0
+faiss_gpu==1.7.1.post2
+faiss==1.5.3
+ipython==8.21.0
+ptvsd==4.3.2
+PyYAML==6.0.1
+scikit_learn==1.4.0
+SPARQLWrapper==2.0.0
+tensorboardX==2.6.2.2
+transformers==4.37.2
