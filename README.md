@@ -141,11 +141,11 @@ We have exported the required dependencies for the project to requirements. txt,
 First, use Conda to create virtual environment `EPR-KGQA`,
 
 ```
-conda create -n EPR-KGQA python=3.7
+conda create -n EPR_KGQA python=3.7
 ```
 and activate it:
 ```
-conda activate EPR-KGQA
+conda activate EPR_KGQA
 ```
 Then use pip to install the dependent packages based on `requirements.txt`.
 ```
