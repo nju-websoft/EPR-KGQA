@@ -128,7 +128,7 @@ The best results of IR methods are in **bold**, and the second-best results are 
 
 ## Reproducing the Results
 
-If you encounter any difficulties in reproducing the code, please feel free to reach out to me via email (liangchuanluo@smail.nju.edu.cn), and I can provide you with the specific data you need.
+If you encounter any difficulties in reproducing the results, please feel free to reach out to me via email (liangchuanluo@smail.nju.edu.cn), and I can provide you with the specific data you need.
 
 It should be noted that our method involves a large number of queries on the knowledge graph and training multiple models during implementation. Due to the possibility of query timeouts and slight differences in the models trained each time (due to different graphics card models, etc.), the final reproduced results may have slight differences from those in the paper.
 
