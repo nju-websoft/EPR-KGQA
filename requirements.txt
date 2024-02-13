@@ -6,7 +6,7 @@ pyodbc==4.0.31
 torch==1.9.0
 faiss_gpu==1.7.1.post2
 faiss==1.5.3
-ipython==8.21.0
+ipython==7.34.0
 ptvsd==4.3.2
 PyYAML==6.0.1
 scikit_learn==1.4.0
