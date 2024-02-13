@@ -208,7 +208,7 @@ python atomic_pattern_retrieval/biencoder/biencoder_inference.py --config config
 ```
 ### Evidence Pattern Retrieval
 #### CWQ
-For evidence pattern ranking, We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1x4wttiL7fYDy4zZj9NgiRhORksan14ye), place it to the corresponding path and then the step for training ranking model `sh -x evidence_pattern_retrieval/train_ep_ranking.sh CWQ`can be skipped.
+For evidence pattern ranking, We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1x4wttiL7fYDy4zZj9NgiRhORksan14ye), place it to the corresponding path and then the step for training ranking model `sh -x evidence_pattern_retrieval/train_ep_ranking.sh CWQ`can be skipped. (And you can also comment out the code related to generating training data in the file `evidence_pattern_retrieval/generate_ep_ranking_data.py`, leaving only the code for generating prediction data.)
 
 In order to quick start, we upload the name of topic entities (`data/CWQ/ep_retrieval/CWQ_entity_name_dict.json`) (used when generating training data) in [this link](https://drive.google.com/drive/folders/1WxPu3UhFVgSZPlmoEKKsoYCeLAycGfGm), download it and put it in the corresponding path can save the time of query.
 ```
@@ -225,7 +225,7 @@ CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CW
 CUDA_VISIBLE_DEVICES=0 sh -x evidence_pattern_retrieval/predict_ep_ranking.sh CWQ test 7 80# ds_tag, split, epoch, topk 
 ```
 #### WebQSP
-For evidence pattern ranking, We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1Xhzi1EUnlysX5n4wqnqnf9zQ_MGqlrIH), place it to the corresponding path and then the step for training ranking model `sh -x evidence_pattern_retrieval/train_ep_ranking.sh WebQSP`can be skipped.
+For evidence pattern ranking, We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1Xhzi1EUnlysX5n4wqnqnf9zQ_MGqlrIH), place it to the corresponding path and then the step for training ranking model `sh -x evidence_pattern_retrieval/train_ep_ranking.sh WebQSP`can be skipped. (And you can also comment out the code related to generating training data in the file `evidence_pattern_retrieval/generate_ep_ranking_data.py`, leaving only the code for generating prediction data.)
 
 In order to quick start, we upload the name of topic entities (`data/WebQSP/ep_retrieval/WebQSP_entity_name_dict.json`) (used when generating training data) in [this link](https://drive.google.com/drive/folders/1ebPVhAmFe1LAOWmMqJFtDcfX7pE50wjQ), download it and put it in the corresponding path can save the time of query.
 ```
