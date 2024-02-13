@@ -16,9 +16,8 @@ from my_utils.io_utils import read_json, write_json
 
 
 def create_freebase_rr_aps():
-    dest_file = Config.cache_rr_aps
-    if os.path.exists(dest_file):
-        print(f'{dest_file} already exists!')
+    if os.path.exists(Config.cache_rr_aps) and os.path.exists("data/cache/rr_aps_tag_dict.json"):
+        print(f'dest_files already exists!')
         return
     rel_conn_fb = {}
     with open(Config.cache_rel_conn) as f:
@@ -50,6 +49,9 @@ def create_freebase_rr_aps():
         rr_aps_tag_dict['S-O'] = list(rr_aps_tag_dict['S-O'])  # 1131831
         rr_aps_tag_dict['O-O'] = list(rr_aps_tag_dict['O-O'])  # 511338
         write_json(rr_aps_tag_dict, "data/cache/rr_aps_tag_dict.json")
+    if os.path.exists(Config.cache_rr_aps):
+        print(f'{Config.cache_rr_aps} already exists!')
+        return
     rel_info_fb = read_json(Config.cache_rel_info)
     rr_aps_fb = []
     for tag in rr_aps_tag_dict:
@@ -62,7 +64,7 @@ def create_freebase_rr_aps():
                 continue
             rr_aps_fb.append(r1 + ' ' + tag + ' ' + r2)
     print('nums of RR-APs:', len(rr_aps_fb))
-    write_json(rr_aps_fb, dest_file) # 2366590
+    write_json(rr_aps_fb, Config.cache_rr_aps) # 2366590
 
 
 def create_rr_aps_forward_and_reverse_dict(dest_file="data/cache/rr_aps_forward_reverse_dict.json", 

@@ -127,8 +127,9 @@ The best results of IR methods are in **bold**, and the second-best results are 
 
 
 ## Reproducing the Results
-
 If you encounter any difficulties in reproducing the results, please feel free to reach out to me via email (liangchuanluo@smail.nju.edu.cn), and I can provide you with the specific data you need.
+
+For a quick start, we have uploaded some models and critical data. You can download them in [this link](https://drive.google.com/drive/folders/1I_YSsbzG5JbGRb65DptVmXiOx7yPkAiV).
 
 It should be noted that our method involves a large number of queries on the knowledge graph and training multiple models during implementation. Due to the possibility of query timeouts and slight differences in the models trained each time (due to different graphics card models, etc.), the final reproduced results may have slight differences from those in the paper.
 
@@ -171,6 +172,8 @@ python preprocess/do_preprocess.py --config config_WebQSP.yaml
 
 ### Atomic Pattern Retrieval
 We achieve EPR through the indexing and retrieval of atomic patterns. We train a biencoder and build faiss index based on the trained model to retrieve candidate RR-APs, and query ER-APs by topic entities.
+
+We have uploaded the RR-APs for Freebase `data/cache/rr_aps_fb.json` to [this link](https://drive.google.com/drive/folders/1yqezWLagrlurscauG34KXFRzMQv-QJ0q), you can download it and place it in the corresponding path in order to save time.
 #### CWQ
 Train Biencoder: We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1elHWluwMc2YTODHksz4Ds2aneND6gmTZ), place it to the corresponding path and then the following steps for training can be skipped.
 ```
