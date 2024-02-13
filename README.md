@@ -6,6 +6,8 @@ Project for the WWW'24 paper: *Enhancing Complex Question Answering over Knowled
 [![image](https://img.shields.io/badge/Paper-preprint_on_arXiv-blue.svg)](https://arxiv.org/abs/2402.02175)
 [![image](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/nju-websoft/EPR-KGQA/tree/master?tab=Apache-2.0-1-ov-file)
 
+DOI: [10.5281/zenodo.10654377](https://zenodo.org/records/10654377)
+
 ## Table of Contents
 - [Overview](#overview)
   - [Evidence pattern retrieval (EPR)](#evidence-pattern-retrieval-epr)
