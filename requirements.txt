@@ -12,4 +12,4 @@ PyYAML==6.0.1
 scikit_learn==0.24.1
 SPARQLWrapper==2.0.0
 tensorboardX==2.6.2.2
-transformers==4.37.2
+transformers==4.18.0
