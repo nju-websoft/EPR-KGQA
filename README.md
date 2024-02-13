@@ -147,7 +147,7 @@ pip install -r requirements.txt
 ### Preprocessing
 In the preprocessing stage, we query the relation information(`data/cache/relation_info_fb.json`), type information(`data/cache/type_info_fb.json`), and adjacent relation information(`data/cache/rel_conn_fb.jsonl`) of the Freebase knowledge base. And for CWQ and WebQSP, query the path between topic entities and answer as supervision information(`data/cache/CWQ/cached_paths.jsonl` and `data/cache/WebQSP/cached_paths.jsonl`).
 
-You can download the above cache file from [this link](https://drive.google.com/drive/folders/1yqezWLagrlurscauG34KXFRzMQv-QJ0q), and place them in the corresponding paths. Then the following preprocessing steps can be skipped.
+You can download the above cached files from [this link](https://drive.google.com/drive/folders/1yqezWLagrlurscauG34KXFRzMQv-QJ0q), and place them in the corresponding paths. Then the following preprocessing steps can be skipped.
 
 #### CWQ
 ```
@@ -163,7 +163,7 @@ python preprocess/do_preprocess.py --config config_WebQSP.yaml
 ```
 
 ### Atomic Pattern Retrieval
-We achieve EPR through the indexing and retrieval of atomic patterns. We train a biencoder and build faiss index based on the trained model to retrieval candidate RR-APs, and query ER-APs by topic entities.
+We achieve EPR through the indexing and retrieval of atomic patterns. We train a biencoder and build faiss index based on the trained model to retrieve candidate RR-APs, and query ER-APs by topic entities.
 #### CWQ
 Train Biencoder: We have uploaded the trained model to [this link](https://drive.google.com/drive/folders/1elHWluwMc2YTODHksz4Ds2aneND6gmTZ), place it to the corresponding path and then the following steps for training can be skipped.
 ```
@@ -243,7 +243,7 @@ python subgraph_extraction/convert_to_nsm_input.py --config config_WebQSP.yaml
 ```
 
 ### NSM Reasoning
-In the answer reasoning module, we use NSM as the reasoner to obtain the final answer based on subgraphs.
+In the answer reasoning module, we use NSM as the reasoner to obtain the final answer(s) based on subgraphs.
 #### CWQ
 ```
 cd NSM_H
