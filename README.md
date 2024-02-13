@@ -12,6 +12,13 @@ Project for the WWW'24 paper: *Enhancing Complex Question Answering over Knowled
   - [Experimental Results](#experimental-results)
 - [Project Organization](#project-organization)
 - [Reproducing the Results](#reproducing-the-results)
+  - [Conda Environment](#conda-environment)
+  - [Freebase SetUp](#freebase-setup)
+  - [Preprocessing](#preprocessing)
+  - [Atomic Pattern Retrieval](#atomic-pattern-retrieval)
+  - [Evidence Pattern Retrieval](#evidence-pattern-retrieval)
+  - [Subgraph Extraction](#subgraph-extraction)
+  - [NSM reasoning](#nsm-reasoning)
 - [Citation](#citation)
 - [Acknowledgements](#acknowledgements)
 
