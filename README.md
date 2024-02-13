@@ -245,6 +245,7 @@ python subgraph_extraction/convert_to_nsm_input.py --config config_WebQSP.yaml
 ### NSM Reasoning
 In the answer reasoning module, we use NSM as the reasoner to obtain the final answer(s) based on subgraphs.
 #### CWQ
+First download files from [this link](https://drive.google.com/drive/folders/1hjY6l_lwWzDNb4oFpcPOEfCtvXddEoiu), and place them in the corresponding paths, and then run the following commands:
 ```
 cd NSM_H
 export PYTHONPATH=.
@@ -254,7 +255,7 @@ chmod +x ../answer_reasoning/predict_nsm.sh
 sh -x ../answer_reasoning/predict_nsm.sh CWQ
 ```
 #### WebQSP
-
+First download files from [this link](https://drive.google.com/drive/folders/1K1cmwJIPEhOsrB8regRIcbyJWBNEel6i), and place them in the corresponding paths, and then run the following commands:
 ```
 cd NSM_H
 export PYTHONPATH=.
