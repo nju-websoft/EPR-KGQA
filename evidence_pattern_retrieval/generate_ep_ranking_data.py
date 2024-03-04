@@ -212,12 +212,12 @@ def generate_data_for_prediction(split, sample_size, topk=100):
         ranking_problems = []
         for serial_num in range(num_problems):
             ranking_problems.append({
-                "problem_id": f'test-{idx}-{serial_num}',
+                "problem_id": f'{split}-{idx}-{serial_num}',
                 "candidates": candidates[serial_num * sample_size: (serial_num + 1) * sample_size]
             })
         dest_data.append({
             'id': data_item['id'],
-            'split_id': f'test-{idx}',
+            'split_id': f'{split}-{idx}',
             'question': data_item['question'],
             'ranking_problems': ranking_problems
         })
