@@ -1,15 +1,5 @@
 import json
 
-# WEBQSP_ENTITY_FILE = "datasets/webqsp/entities.txt"
-# WEBQSP_SIMPLE_FILE = "datasets/webqsp/test_simple.json"
-# WEBQSP_RESULT_FILE = "checkpoint/webqsp_report/student/webqsp_hybrid_student_test.info"
-# WEBQSP_OUT_FILE = "WebQSPTestResult.json"
-
-# CWQ_ENTITY_FILE = "datasets/CWQ/entities.txt"
-# CWQ_SIMPLE_FILE = "datasets/CWQ/test_simple.json"
-# CWQ_RESULT_FILE = "checkpoint/CWQ_report/student/CWQ_hybrid_student_test.info"
-# CWQ_OUT_FILE = "CWQTestResult.json"
-
 CWQ_ENTITY_FILE = "datasets/CWQ_EPR/entities.txt"
 CWQ_SIMPLE_FILE = "datasets/CWQ_EPR/test_simple.json"
 CWQ_RESULT_FILE = "checkpoint/pretrain/CWQ_nsm_test.info"
