@@ -10,15 +10,15 @@ import json
 # CWQ_RESULT_FILE = "checkpoint/CWQ_report/student/CWQ_hybrid_student_test.info"
 # CWQ_OUT_FILE = "CWQTestResult.json"
 
-CWQ_ENTITY_FILE = "datasets/CWQ_EGPSR/entities.txt"
-CWQ_SIMPLE_FILE = "datasets/CWQ_EGPSR/test_simple.json"
+CWQ_ENTITY_FILE = "datasets/CWQ_EPR/entities.txt"
+CWQ_SIMPLE_FILE = "datasets/CWQ_EPR/test_simple.json"
 CWQ_RESULT_FILE = "checkpoint/pretrain/CWQ_nsm_test.info"
-CWQ_OUT_FILE = "OursCWQTestResult.json"
+CWQ_OUT_FILE = "checkpoint/pretrain/OursCWQTestResult.json"
 
-WEBQSP_ENTITY_FILE = "datasets/WebQSP_EGPSR/entities.txt"
-WEBQSP_SIMPLE_FILE = "datasets/WebQSP_EGPSR/test_simple.json"
+WEBQSP_ENTITY_FILE = "datasets/WebQSP_EPR/entities.txt"
+WEBQSP_SIMPLE_FILE = "datasets/WebQSP_EPR/test_simple.json"
 WEBQSP_RESULT_FILE = "checkpoint/pretrain/WebQSP_nsm_test.info"
-WEBQSP_OUT_FILE = "OursWebQSPTestResult.json"
+WEBQSP_OUT_FILE = "checkpoint/pretrain/OursWebQSPTestResult.json"
 
 
 def load_entity(filename):
