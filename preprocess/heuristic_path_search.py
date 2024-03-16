@@ -25,6 +25,15 @@ banned_base_rels = set(
 logger = Logger.get_logger("Preprocess", True)
 
 
+def is_number_answer(answer):
+    for c in answer:
+        if not ("0" <= c <= "9" or c == "-"):
+            return False
+    if "." in answer:
+        return False
+    return True
+
+
 def heuristic_search_path(data_items: List[DataItem], tag: str):
     # 读取已经缓存的搜索结果
     cached_path = read_jsonl_by_key(Config.cache_path)
@@ -35,7 +44,14 @@ def heuristic_search_path(data_items: List[DataItem], tag: str):
         # 若问题的所有 Topic Entity 都成功搜索出至少一条路径则称做搜索成功
         search_succ = True
         topic_ents = set(item.topic_ents)
-        ans_ents = item.answers
+        raw_ans_ents = item.answers
+        ans_ents = []
+        for ans_ent in raw_ans_ents:
+            if is_number_answer(ans_ent):
+                ans_ent = '"' + ans_ent + '"^^xsd:dateTime'
+            elif not ans_ent.startswith("ns:"):
+                ans_ent = '"' + ans_ent + '"@en'
+            ans_ents.append(ans_ent)
         key_lexicals = item.get_question_key_lexical()
         results = []
         if len(topic_ents) == 0 or len(ans_ents) == 0:
