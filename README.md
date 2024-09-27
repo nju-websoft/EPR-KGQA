@@ -136,7 +136,7 @@ For a quick start, we have uploaded critical models and data. You can download t
 It should be noted that our method involves a large number of queries on the knowledge graph and training multiple models during implementation. Due to the possibility of query timeouts and slight differences in the models trained each time (due to different graphics card models, etc.), the final reproduced results may have slight differences from those in the paper.
 
 ### Freebase SetUp
-Setup Freebase: Both datasets use Freebase as the knowledge graph. You may refer to [Freebase Setup](https://github.com/dki-lab/Freebase-Setup) to set up a Virtuoso triplestore service (We use the official data dump of Freebase from [here](https://developers.google.com/freebase)). After starting your virtuoso service, please modify odbc and sparqlwrapper in file `my_utils/freebase.py` (for large query by odbc) and `evidence_pattern_retrieval/generate_ep_ranking_data.py` (for small query in sparqlwrapper) respectively.
+Setup Freebase: Both datasets use Freebase as the knowledge graph (We use the official data dump of Freebase from [here](https://developers.google.com/freebase)). You may refer to [Freebase Setup](https://github.com/dki-lab/Freebase-Setup) to set up a Virtuoso triplestore service. After starting your virtuoso service, please modify odbc and sparqlwrapper in file `my_utils/freebase.py` (for large query by odbc) and `evidence_pattern_retrieval/generate_ep_ranking_data.py` (for small query in sparqlwrapper) respectively.
 
 ### Conda Environment
 We have exported the required dependencies for the project to requirements. txt, Therefore, you only need to follow these steps to create the environment required for this project.
